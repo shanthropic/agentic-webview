@@ -29,6 +29,12 @@ class AgenticWebView @JvmOverloads constructor(
 
     companion object {
         const val BRIDGE_VERSION = 1
+
+        fun init() {
+            // Placeholder for library initialization
+        }
+
+        fun getVersion(): String = "0.1.0"
     }
 
     init {
