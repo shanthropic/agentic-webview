@@ -21,8 +21,6 @@ export class DomParser {
     private nextId = 1;
 
     public getAccessibilityTree(maxElements: number = 500): { tree: AccessibilityNode[], truncated: boolean } {
-        this.elementMap.clear();
-        this.nextId = 1;
         const nodes: AccessibilityNode[] = [];
         let truncated = false;
 
@@ -62,7 +60,10 @@ export class DomParser {
             }
         };
 
+        // Don't clear elementMap here to maintain stability.
+        // We will prune it later if needed, or just let it grow as long as elements exist in DOM.
         traverse(document.body);
+        this.pruneElementMap();
         return { tree: nodes, truncated };
     }
 
@@ -89,15 +90,22 @@ export class DomParser {
             return true;
         }
 
+        const role = el.getAttribute('role');
+        const interactiveRoles = ['button', 'link', 'checkbox', 'menuitem', 'option', 'radio', 'switch', 'tab', 'textbox'];
+        if (role && interactiveRoles.includes(role.toLowerCase())) return true;
+
         if (style.cursor === 'pointer') return true;
 
         return false;
     }
 
     private serializeNode(el: Element, inIframe: boolean): AccessibilityNode {
-        const id = (this.nextId++).toString();
-        el.setAttribute('data-agent-id', id);
-        this.elementMap.set(id, el);
+        let id = el.getAttribute('data-agent-id');
+        if (!id || !this.elementMap.has(id)) {
+            id = (this.nextId++).toString();
+            el.setAttribute('data-agent-id', id);
+            this.elementMap.set(id, el);
+        }
 
         const rect = el.getBoundingClientRect();
         const attributes: { [key: string]: string } = {};
@@ -108,7 +116,7 @@ export class DomParser {
         return {
             id,
             tag: el.tagName,
-            text: (el as HTMLElement).innerText?.trim() || el.getAttribute('aria-label') || '',
+            text: (el as HTMLElement).innerText?.trim() || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '',
             role: el.getAttribute('role') || '',
             bounds: {
                 left: rect.left,
@@ -120,6 +128,14 @@ export class DomParser {
             occluded: this.isOccluded(el, rect),
             inIframe
         };
+    }
+
+    private pruneElementMap() {
+        for (const [id, el] of this.elementMap.entries()) {
+            if (!document.body.contains(el)) {
+                this.elementMap.delete(id);
+            }
+        }
     }
 
     private isOccluded(el: Element, rect: DOMRect): boolean {

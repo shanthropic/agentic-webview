@@ -1,18 +1,22 @@
 package com.shantoislamdev.agenticwebview
 
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Base64
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.webkit.ValueCallback
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
 import com.shantoislamdev.agenticwebview.internal.SdkLogger
 import com.shantoislamdev.agenticwebview.models.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
@@ -27,6 +31,16 @@ class AgenticWebController(
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var settlementJob: Job? = null
+    
+    private val pendingPromises = mutableMapOf<String, CompletableDeferred<String>>()
+
+    private val pixelCopyThread = HandlerThread("PixelCopyThread").apply { start() }
+    private val pixelCopyHandler = Handler(pixelCopyThread.looper)
+
+    private var cachedBitmap: Bitmap? = null
+
+    private val _state = MutableStateFlow<AgentState?>(null)
+    val state: StateFlow<AgentState?> = _state.asStateFlow()
 
     fun attach(webView: AgenticWebView) {
         this.webView = webView
@@ -43,6 +57,20 @@ class AgenticWebController(
 
             override fun onDomMutated(json: String) {
                 startSettlementTimer()
+                scope.launch {
+                    val currentState = captureState()
+                    if (currentState is AgentResult.Success) {
+                        _state.value = currentState.data
+                    }
+                }
+            }
+
+            override fun onPromiseResolved(promiseId: String, result: String) {
+                this@AgenticWebController.onPromiseResolved(promiseId, result)
+            }
+
+            override fun onCrash(didRecover: Boolean) {
+                logger.e("Controller", "WebView crashed. Recovery attempted: $didRecover")
             }
         }
     }
@@ -168,25 +196,43 @@ class AgenticWebController(
     }
 
     private suspend fun getElementCoords(agentId: String): Pair<Float, Float>? {
-        evalJs("__AgenticInternal.scrollIntoView('$agentId')")
-        delay(300) // Wait for scroll animation
-        val json = evalJs("__AgenticInternal.getElementCenter('$agentId')")
-        if (json == "null") return null
-        val obj = JSONObject(json)
-        return Pair(obj.getDouble("x").toFloat(), obj.getDouble("y").toFloat())
+        val promiseId = java.util.UUID.randomUUID().toString()
+        evalJs("__AgenticInternal.scrollIntoView('$agentId', '$promiseId')")
+        
+        val deferred = CompletableDeferred<String>()
+        pendingPromises[promiseId] = deferred
+        
+        return try {
+            val result = withTimeout(5000) { deferred.await() }
+            if (result != "true") return null
+            
+            val json = evalJs("__AgenticInternal.getElementCenter('$agentId')")
+            if (json == "null") return null
+            val obj = JSONObject(json)
+            Pair(obj.getDouble("x").toFloat(), obj.getDouble("y").toFloat())
+        } catch (e: Exception) {
+            logger.e("Controller", "Failed to resolve scroll promise", e)
+            null
+        } finally {
+            pendingPromises.remove(promiseId)
+        }
     }
 
-    private fun dispatchTouch(x: Float, y: Float, durationMs: Long = 0) {
+    fun onPromiseResolved(promiseId: String, result: String) {
+        pendingPromises[promiseId]?.complete(result)
+    }
+
+    private suspend fun dispatchTouch(x: Float, y: Float, durationMs: Long = 0) {
         val wv = webView ?: return
-        val downTime = System.currentTimeMillis()
+        val downTime = SystemClock.uptimeMillis()
         val downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
         wv.dispatchTouchEvent(downEvent)
         
         if (durationMs > 0) {
-            Thread.sleep(durationMs)
+            delay(durationMs)
         }
 
-        val upTime = downTime + durationMs + 50
+        val upTime = SystemClock.uptimeMillis()
         val upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, x, y, 0)
         wv.dispatchTouchEvent(upEvent)
     }
@@ -205,15 +251,57 @@ class AgenticWebController(
         }
     }
 
-    private fun captureScreenshot(): String? {
+    private suspend fun captureScreenshot(): String? {
         val wv = webView ?: return null
-        val bitmap = Bitmap.createBitmap(wv.width, wv.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        wv.draw(canvas)
         
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, config.screenshotQuality, outputStream)
-        return Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+        if (wv.width <= 0 || wv.height <= 0) return null
+
+        val window = (wv.context as? Activity)?.window ?: return null
+        val bitmap = getReusableBitmap(wv.width, wv.height)
+        
+        val locationInWindow = IntArray(2)
+        wv.getLocationInWindow(locationInWindow)
+        val sourceRect = Rect(
+            locationInWindow[0],
+            locationInWindow[1],
+            locationInWindow[0] + wv.width,
+            locationInWindow[1] + wv.height
+        )
+
+        return try {
+            val result = suspendCancellableCoroutine<Int> { cont ->
+                try {
+                    PixelCopy.request(window, sourceRect, bitmap, { copyResult ->
+                        cont.resume(copyResult)
+                    }, pixelCopyHandler)
+                } catch (e: Exception) {
+                    cont.resume(-1) // Signal error
+                }
+            }
+
+            if (result == PixelCopy.SUCCESS) {
+                val outputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, config.screenshotQuality, outputStream)
+                Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+            } else {
+                logger.e("Controller", "PixelCopy failed with code: $result")
+                null
+            }
+        } catch (e: Exception) {
+            logger.e("Controller", "Failed to capture screenshot", e)
+            null
+        }
+    }
+
+    private fun getReusableBitmap(width: Int, height: Int): Bitmap {
+        val current = cachedBitmap
+        if (current != null && current.width == width && current.height == height) {
+            return current
+        }
+        current?.recycle()
+        val newBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        cachedBitmap = newBitmap
+        return newBitmap
     }
 
     private fun parseViewportInfo(obj: JSONObject): ViewportInfo {
@@ -229,6 +317,9 @@ class AgenticWebController(
 
     fun destroy() {
         scope.cancel()
+        pixelCopyThread.quitSafely()
+        cachedBitmap?.recycle()
+        cachedBitmap = null
     }
 
     fun pauseTimers() {

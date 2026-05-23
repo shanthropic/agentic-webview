@@ -21,4 +21,10 @@ export class Bridge {
             window.AgenticBridge.onError(JSON.stringify({ error: message, stack }));
         }
     }
+
+    public resolvePromise(promiseId: string, result: string): void {
+        if (window.AgenticBridge) {
+            (window.AgenticBridge as any).resolvePromise(promiseId, result);
+        }
+    }
 }

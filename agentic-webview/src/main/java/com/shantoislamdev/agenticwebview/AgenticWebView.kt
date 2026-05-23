@@ -27,6 +27,10 @@ class AgenticWebView @JvmOverloads constructor(
 
     var listener: AgenticWebViewListener? = null
 
+    companion object {
+        const val BRIDGE_VERSION = 1
+    }
+
     init {
         setupSettings()
         setupClients()
@@ -86,6 +90,12 @@ class AgenticWebView @JvmOverloads constructor(
                 pageLifecycleState = PageLifecycleState.CRASHED
                 listener?.onStateChanged(pageLifecycleState)
                 logger.e("WebView", "Renderer process gone. Did crash: ${detail?.didCrash()}")
+                
+                if (detail?.didCrash() == true) {
+                    listener?.onCrash(didRecover = true)
+                    // In a real implementation, the host app might need to recreate the view.
+                    // For now, we signal the crash and rely on the controller/host to handle it.
+                }
                 return true // Prevent app crash
             }
         }
@@ -137,6 +147,11 @@ class AgenticWebView @JvmOverloads constructor(
 
         @JavascriptInterface
         fun onDomUpdate(version: Int, json: String) {
+            if (version != BRIDGE_VERSION) {
+                logger.w("Bridge", "Version mismatch: Expected $BRIDGE_VERSION, got $version. Re-injecting.")
+                mainHandler.post { injectScript() }
+                return
+            }
             mainHandler.post {
                 listener?.onDomMutated(json)
             }
@@ -146,11 +161,20 @@ class AgenticWebView @JvmOverloads constructor(
         fun onError(errorJson: String) {
             logger.e("Bridge", "JS Error: $errorJson")
         }
+
+        @JavascriptInterface
+        fun resolvePromise(promiseId: String, result: String) {
+            mainHandler.post {
+                listener?.onPromiseResolved(promiseId, result)
+            }
+        }
     }
 
     interface AgenticWebViewListener {
         fun onStateChanged(state: PageLifecycleState)
         fun onProgressChanged(progress: Int)
         fun onDomMutated(json: String)
+        fun onPromiseResolved(promiseId: String, result: String)
+        fun onCrash(didRecover: Boolean)
     }
 }

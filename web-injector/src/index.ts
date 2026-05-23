@@ -28,12 +28,14 @@ export const AgenticEngine = {
         });
     },
 
-    async scrollIntoView(agentId: string) {
+    async scrollIntoView(agentId: string, promiseId: string) {
         const el = parser.getElementById(agentId);
         if (el) {
             await interaction.scrollIntoViewAndWait(el);
+            bridge.resolvePromise(promiseId, "true");
             return true;
         }
+        bridge.resolvePromise(promiseId, "false");
         return false;
     },
 
