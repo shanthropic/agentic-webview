@@ -11,12 +11,13 @@ The SDK parses the DOM into a simplified **Accessibility Tree**. Instead of thou
 
 **Why this is better for LLMs:**
 - **Token Efficiency**: Reduces the input size by 90-95% compared to raw HTML.
-- **Stable Identifiers**: Each element is assigned a stable `agentId`. The LLM refers to this ID when it wants to interact.
+- **Stable Identifiers**: Each element is assigned a stable `agentId`. Unlike standard DOM indices, these IDs persist even when the page content changes or shifts due to mutations (like new content loading or ads appearing). This allows the LLM to refer to an element with confidence throughout its "thinking" loop.
 - **Semantic Context**: Elements are enriched with roles (`button`, `link`, `input`), labels, and descriptions.
 - **Occlusion Awareness**: The `occluded: true` flag tells the agent if an element is technically in the DOM but hidden behind something else (like a cookie banner or a modal), preventing the agent from trying to click unreachable targets.
 
 ### Multimodal Vision
 For vision-capable models (like GPT-4o or Claude 3.5 Sonnet), the SDK provides a high-quality base64-encoded JPEG screenshot of the current viewport. 
+- **Hardware Acceleration**: The SDK uses `PixelCopy` to ensure that hardware-accelerated content (videos, animations, canvas-based widgets) is correctly captured in the screenshot.
 - **Coordinate Sync**: The coordinates in the accessibility tree are perfectly synced with the screenshot, allowing the model to "see" exactly what it is "touching."
 
 ---
@@ -24,6 +25,9 @@ For vision-capable models (like GPT-4o or Claude 3.5 Sonnet), the SDK provides a
 ## Action: The "Hands" of the Agent
 
 The SDK provides a set of deterministic tools. Your agent should be configured with a tool-calling interface that maps directly to the `AgentAction` sealed class.
+
+### Reactive Feedback Loop
+The SDK exposes a **Live State Stream** (`controller.state`). Instead of polling `captureState` repeatedly, your agent's host application can wait for the SDK to signal that the page has "settled" (network idle + DOM stable) before triggering the next move.
 
 ### Recommended Tool Schema
 Map your LLM's functions to these SDK actions:

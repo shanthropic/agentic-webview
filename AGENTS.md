@@ -22,6 +22,7 @@
 
 ## Coding Standards
 - **Thread Safety**: All `AgenticWebController` operations must be serialized via the internal `Mutex`.
+- **Async Bridge**: Use the `resolvePromise` mechanism when implementing new asynchronous features in the `web-injector` to allow Kotlin to await JS completion.
 - **Type Safety**: Use `AgentResult<T>` for all public SDK operations to handle errors explicitly.
 - **Framework Compatibility**: When modifying `web-injector`, use native prototype setters for inputs to ensure compatibility with React/Vue/Angular synthetic event systems.
 - **Compose**: Maintain Jetpack Compose support via `AgenticWebViewComposable`.

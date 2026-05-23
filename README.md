@@ -4,13 +4,13 @@ An Android SDK library that gives LLM-powered AI agents real web-browsing capabi
 
 ## Features
 
--   **Simplified Accessibility Tree**: Converts complex HTML into a clean, LLM-friendly JSON tree of interactive elements.
+-   **Simplified Accessibility Tree**: Converts complex HTML into a clean, LLM-friendly JSON tree of interactive elements with **stable identifiers** that persist across mutations.
 -   **Shadow DOM & Iframe Support**: Recursively traverses Shadow DOM and same-origin iframes.
 -   **Occlusion Detection**: Automatically identifies if elements are visible or hidden behind overlays/modals.
 -   **Framework-Safe Interactions**: Simulated inputs that work reliably with React, Vue, and Angular event systems.
--   **Screenshot Capturing**: Provides high-quality viewport snapshots for multimodal LLMs.
+-   **Hardware-Accelerated Screenshots**: Uses `PixelCopy` to capture high-quality viewport snapshots, including videos and WebGL content.
+-   **Reactive State Management**: Exposes a `StateFlow` for live tracking of DOM mutations and page state changes.
 -   **Jetpack Compose Ready**: Includes a native Compose wrapper for modern Android development.
--   **Robust Error Handling**: Structured result types for programmatic failure handling (timeouts, missing elements, etc.).
 
 ## Architecture
 
@@ -50,6 +50,13 @@ AgenticWebViewComposable(
 )
 
 // In a Coroutine scope
+controller.state.collect { state ->
+    state?.let { 
+        // React to live DOM updates or page settlement
+        println("New state: ${it.url}")
+    }
+}
+
 val result = controller.executeAction(AgentAction.Navigate("https://google.com"))
 if (result is AgentResult.Success) {
     val state = controller.captureState()
