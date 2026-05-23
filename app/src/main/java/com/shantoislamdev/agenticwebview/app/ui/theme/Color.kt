@@ -1,4 +1,4 @@
-package com.shantoislamdev.webviewagent.ui.theme
+package com.shantoislamdev.agenticwebview.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

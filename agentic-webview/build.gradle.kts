@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.shantoislamdev.webviewagent.library"
+    namespace = "com.shantoislamdev.agenticwebview"
     compileSdk = 36
 
     defaultConfig {

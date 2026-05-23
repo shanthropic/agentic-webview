@@ -1,4 +1,4 @@
-package com.shantoislamdev.webviewagent
+package com.shantoislamdev.agenticwebview.app
 
 import org.junit.Test
 

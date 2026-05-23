@@ -1,4 +1,4 @@
-package com.shantoislamdev.webviewagent
+package com.shantoislamdev.agenticwebview.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,19 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.shantoislamdev.webviewagent.library.WebviewAgent
-import com.shantoislamdev.webviewagent.ui.theme.WebviewAgentTheme
+import com.shantoislamdev.agenticwebview.AgenticWebView
+import com.shantoislamdev.agenticwebview.app.ui.theme.WebviewAgentTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WebviewAgent.init()
+        AgenticWebView.init()
         enableEdgeToEdge()
         setContent {
             WebviewAgentTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "WebviewAgent Version: ${WebviewAgent.getVersion()}",
+                        name = "AgenticWebView Version: ${AgenticWebView.getVersion()}",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

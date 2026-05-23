@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.shantoislamdev.webviewagent"
+    namespace = "com.shantoislamdev.agenticwebview.app"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.shantoislamdev.webviewagent"
+        applicationId = "com.shantoislamdev.agenticwebview.app"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":webview-agent"))
+    implementation(project(":agentic-webview"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

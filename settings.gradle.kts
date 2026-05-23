@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Webview Agent"
+rootProject.name = "AgenticWebView"
 include(":app")
-include(":webview-agent")
+include(":agentic-webview")

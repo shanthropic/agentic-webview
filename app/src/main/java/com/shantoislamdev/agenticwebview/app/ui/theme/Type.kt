@@ -1,4 +1,4 @@
-package com.shantoislamdev.webviewagent.ui.theme
+package com.shantoislamdev.agenticwebview.app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
