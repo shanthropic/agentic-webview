@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Interactive Test</title>
+</head>
+<body>
+    <button id="btn1">Click Me</button>
+    <a href="/target" id="link1">Go to Target</a>
+    <input type="text" id="input1" placeholder="Type here">
+    <select id="select1">
+        <option value="opt1">Option 1</option>
+        <option value="opt2">Option 2</option>
+    </select>
+    <script>
+        document.getElementById('btn1').onclick = () => {
+            document.getElementById('btn1').innerText = 'Clicked';
+        };
+    </script>
+</body>
+</html>
