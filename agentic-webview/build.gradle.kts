@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// License Information
+project.extra["license"] = "Apache-2.0"
+project.extra["owner"] = "Shanto Islam (@shantoislamdev)"
+
 android {
     namespace = "com.shantoislamdev.agenticwebview"
     compileSdk = 37
