@@ -73,6 +73,12 @@ The SDK includes a comprehensive instrumented test suite using `MockWebServer`.
 ./gradlew :agentic-webview:connectedAndroidTest
 ```
 
+## Documentation
+
+-   `AGENTS.md`: Machine-readable instructions and context for AI coding agents.
+-   `docs/AGENT_GUIDE.md`: Comprehensive guide for developers building web agents using this SDK.
+-   `walkthrough.artifact.md`: Technical implementation details and verification summary.
+
 ## License
 
 This project is licensed under the MIT License.
