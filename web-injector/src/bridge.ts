@@ -3,28 +3,34 @@ export const BRIDGE_VERSION = 1;
 declare global {
     interface Window {
         AgenticBridge?: {
-            onDomUpdate(version: number, json: string): void;
-            onError(errorJson: string): void;
+            onDomUpdate(token: string, version: number, json: string): void;
+            onError(token: string, errorJson: string): void;
         };
     }
 }
 
 export class Bridge {
+    private sessionToken: string | null = null;
+
+    public setSessionToken(token: string): void {
+        this.sessionToken = token;
+    }
+
     public notifyDomUpdate(json: string): void {
-        if (window.AgenticBridge) {
-            window.AgenticBridge.onDomUpdate(BRIDGE_VERSION, json);
+        if (window.AgenticBridge && this.sessionToken) {
+            (window.AgenticBridge as any).onDomUpdate(this.sessionToken, BRIDGE_VERSION, json);
         }
     }
 
     public sendError(message: string, stack?: string): void {
-        if (window.AgenticBridge) {
-            window.AgenticBridge.onError(JSON.stringify({ error: message, stack }));
+        if (window.AgenticBridge && this.sessionToken) {
+            (window.AgenticBridge as any).onError(this.sessionToken, JSON.stringify({ error: message, stack }));
         }
     }
 
     public resolvePromise(promiseId: string, result: string): void {
-        if (window.AgenticBridge) {
-            (window.AgenticBridge as any).resolvePromise(promiseId, result);
+        if (window.AgenticBridge && this.sessionToken) {
+            (window.AgenticBridge as any).resolvePromise(this.sessionToken, promiseId, result);
         }
     }
 }

@@ -13,6 +13,10 @@ interaction.setupMutationObserver(() => {
 });
 
 export const AgenticEngine = {
+    setSessionToken(token: string) {
+        bridge.setSessionToken(token);
+    },
+
     getAccessibilityTree(maxElements?: number) {
         return JSON.stringify(parser.getAccessibilityTree(maxElements));
     },

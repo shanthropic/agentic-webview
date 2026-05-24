@@ -25,6 +25,9 @@ class AgenticWebView @JvmOverloads constructor(
     var pageLifecycleState: PageLifecycleState = PageLifecycleState.IDLE
         private set
 
+    @Volatile
+    private var currentSessionToken: String = ""
+
     var listener: AgenticWebViewListener? = null
 
     companion object {
@@ -58,6 +61,7 @@ class AgenticWebView @JvmOverloads constructor(
     private fun setupClients() {
         webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                currentSessionToken = java.util.UUID.randomUUID().toString()
                 pageLifecycleState = PageLifecycleState.LOADING
                 listener?.onStateChanged(pageLifecycleState)
             }
@@ -141,6 +145,7 @@ class AgenticWebView @JvmOverloads constructor(
             }
         }
         evaluateJavascript(scriptCache!!, null)
+        evaluateJavascript("__AgenticInternal.setSessionToken('$currentSessionToken')", null)
     }
 
     fun updatePageState(state: PageLifecycleState) {
@@ -152,7 +157,11 @@ class AgenticWebView @JvmOverloads constructor(
         private val mainHandler = Handler(Looper.getMainLooper())
 
         @JavascriptInterface
-        fun onDomUpdate(version: Int, json: String) {
+        fun onDomUpdate(token: String, version: Int, json: String) {
+            if (token != currentSessionToken) {
+                logger.w("Bridge", "Security alert: Unauthorized token in onDomUpdate")
+                return
+            }
             if (version != BRIDGE_VERSION) {
                 logger.w("Bridge", "Version mismatch: Expected $BRIDGE_VERSION, got $version. Re-injecting.")
                 mainHandler.post { injectScript() }
@@ -164,12 +173,20 @@ class AgenticWebView @JvmOverloads constructor(
         }
 
         @JavascriptInterface
-        fun onError(errorJson: String) {
+        fun onError(token: String, errorJson: String) {
+            if (token != currentSessionToken) {
+                logger.w("Bridge", "Security alert: Unauthorized token in onError")
+                return
+            }
             logger.e("Bridge", "JS Error: $errorJson")
         }
 
         @JavascriptInterface
-        fun resolvePromise(promiseId: String, result: String) {
+        fun resolvePromise(token: String, promiseId: String, result: String) {
+            if (token != currentSessionToken) {
+                logger.w("Bridge", "Security alert: Unauthorized token in resolvePromise")
+                return
+            }
             mainHandler.post {
                 listener?.onPromiseResolved(promiseId, result)
             }

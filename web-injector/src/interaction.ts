@@ -32,6 +32,29 @@ export class InteractionHandler {
     }
 
     public setInputValue(el: HTMLElement, text: string): boolean {
+        const dispatchFrameworkEvents = (target: HTMLElement, val: string) => {
+            // 1. Dispatch beforeinput (InputEvent)
+            const beforeInputEvent = new InputEvent('beforeinput', {
+                bubbles: true,
+                cancelable: true,
+                inputType: 'insertText',
+                data: val
+            });
+            target.dispatchEvent(beforeInputEvent);
+
+            // 2. Dispatch input (InputEvent)
+            const inputEvent = new InputEvent('input', {
+                bubbles: true,
+                cancelable: true,
+                inputType: 'insertText',
+                data: val
+            });
+            target.dispatchEvent(inputEvent);
+
+            // 3. Dispatch change (Generic Event)
+            target.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+
         if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
             const nativeSetter = Object.getOwnPropertyDescriptor(
                 el instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype,
@@ -40,16 +63,15 @@ export class InteractionHandler {
 
             if (nativeSetter) {
                 nativeSetter.call(el, text);
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                el.dispatchEvent(new Event('change', { bubbles: true }));
+                dispatchFrameworkEvents(el, text);
                 return true;
             }
         }
 
-        // Fallback for other contenteditable elements
+        // Fallback for contenteditable elements
         if (el.isContentEditable) {
             el.innerText = text;
-            el.dispatchEvent(new Event('input', { bubbles: true }));
+            dispatchFrameworkEvents(el, text);
             return true;
         }
 
@@ -75,7 +97,12 @@ export class InteractionHandler {
         observer.observe(document.body, {
             childList: true,
             subtree: true,
-            attributes: true
+            attributes: true,
+            attributeFilter: [
+                'class', 'style', 'hidden', 'disabled', 
+                'aria-hidden', 'aria-disabled', 'readonly', 
+                'checked', 'selected', 'src', 'href'
+            ]
         });
 
         return observer;

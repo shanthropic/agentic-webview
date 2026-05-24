@@ -47,6 +47,11 @@ class AgenticWebController(
         webView.listener = object : AgenticWebView.AgenticWebViewListener {
             override fun onStateChanged(state: PageLifecycleState) {
                 logger.d("Controller", "State changed: $state")
+                if (state == PageLifecycleState.LOADING ||
+                    state == PageLifecycleState.CRASHED ||
+                    state == PageLifecycleState.ERROR) {
+                    cancelAllPendingPromises("Page lifecycle changed to $state")
+                }
             }
 
             override fun onProgressChanged(progress: Int) {
@@ -315,11 +320,22 @@ class AgenticWebController(
         )
     }
 
+    private fun cancelAllPendingPromises(reason: String) {
+        if (pendingPromises.isEmpty()) return
+        logger.w("Controller", "Cancelling all pending promises: $reason")
+        val promises = HashMap(pendingPromises)
+        pendingPromises.clear()
+        for ((_, deferred) in promises) {
+            deferred.complete("error:page_transition:$reason")
+        }
+    }
+
     fun destroy() {
         scope.cancel()
         pixelCopyThread.quitSafely()
         cachedBitmap?.recycle()
         cachedBitmap = null
+        cancelAllPendingPromises("Controller destroyed")
     }
 
     fun pauseTimers() {

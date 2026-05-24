@@ -24,46 +24,58 @@ export class DomParser {
         const nodes: AccessibilityNode[] = [];
         let truncated = false;
 
-        const traverse = (root: ParentNode, inIframe: boolean = false) => {
-            if (nodes.length >= maxElements) {
-                truncated = true;
-                return;
-            }
-
-            const children = Array.from(root.children);
-            for (const child of children) {
+        try {
+            const traverse = (root: ParentNode, inIframe: boolean = false) => {
                 if (nodes.length >= maxElements) {
                     truncated = true;
                     return;
                 }
 
-                if (this.isInteractive(child)) {
-                    nodes.push(this.serializeNode(child, inIframe));
-                }
-
-                if (child.shadowRoot) {
-                    traverse(child.shadowRoot, inIframe);
-                }
-
-                if (child.tagName === 'IFRAME') {
-                    try {
-                        const iframe = child as HTMLIFrameElement;
-                        if (iframe.contentDocument) {
-                            traverse(iframe.contentDocument, true);
-                        }
-                    } catch (e) {
-                        console.warn('Cannot access cross-origin iframe');
+                const children = Array.from(root.children);
+                for (const child of children) {
+                    if (nodes.length >= maxElements) {
+                        truncated = true;
+                        return;
                     }
-                } else {
-                    traverse(child, inIframe);
+
+                    if (this.isInteractive(child)) {
+                        nodes.push(this.serializeNode(child, inIframe));
+                    }
+
+                    if (child.shadowRoot) {
+                        traverse(child.shadowRoot, inIframe);
+                    }
+
+                    if (child.tagName === 'IFRAME') {
+                        try {
+                            const iframe = child as HTMLIFrameElement;
+                            if (iframe.contentDocument) {
+                                traverse(iframe.contentDocument, true);
+                            }
+                        } catch (e) {
+                            console.warn('Cannot access cross-origin iframe');
+                        }
+                    } else {
+                        traverse(child, inIframe);
+                    }
+                }
+            };
+
+            traverse(document.body);
+            this.pruneElementMap();
+        } catch (e: any) {
+            console.error('Error during accessibility tree extraction', e);
+            if (window.AgenticBridge) {
+                try {
+                    window.AgenticBridge.onError(JSON.stringify({
+                        error: e.message || 'Tree walk failure',
+                        stack: e.stack || ''
+                    }));
+                } catch (bridgeErr) {
+                    // Fallback
                 }
             }
-        };
-
-        // Don't clear elementMap here to maintain stability.
-        // We will prune it later if needed, or just let it grow as long as elements exist in DOM.
-        traverse(document.body);
-        this.pruneElementMap();
+        }
         return { tree: nodes, truncated };
     }
 
@@ -95,6 +107,9 @@ export class DomParser {
         if (role && interactiveRoles.includes(role.toLowerCase())) return true;
 
         if (style.cursor === 'pointer') return true;
+
+        // TabIndex focusability rule (excluding body & html tags)
+        if (el.tabIndex >= 0 && el.tagName !== 'BODY' && el.tagName !== 'HTML') return true;
 
         return false;
     }
@@ -141,12 +156,36 @@ export class DomParser {
     private isOccluded(el: Element, rect: DOMRect): boolean {
         if (rect.width === 0 || rect.height === 0) return false;
 
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        // Calculate small corner offsets
+        const insetX = Math.min(rect.width * 0.1, 5);
+        const insetY = Math.min(rect.height * 0.1, 5);
 
-        const hitElement = document.elementFromPoint(centerX, centerY);
-        if (!hitElement) return false;
+        // 5-point layout layout layout layout
+        const points = [
+            { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, // Center
+            { x: rect.left + insetX, y: rect.top + insetY },                // Top-Left
+            { x: rect.right - insetX, y: rect.top + insetY },               // Top-Right
+            { x: rect.left + insetX, y: rect.bottom - insetY },             // Bottom-Left
+            { x: rect.right - insetX, y: rect.bottom - insetY }             // Bottom-Right
+        ];
 
-        return !el.contains(hitElement) && !hitElement.contains(el);
+        let hitCount = 0;
+        let testedPoints = 0;
+
+        for (const pt of points) {
+            // Ignore points outside the viewport
+            if (pt.x < 0 || pt.y < 0 || pt.x > window.innerWidth || pt.y > window.innerHeight) {
+                continue;
+            }
+
+            testedPoints++;
+            const hitElement = document.elementFromPoint(pt.x, pt.y);
+            if (!hitElement || el.contains(hitElement) || hitElement.contains(el)) {
+                hitCount++;
+            }
+        }
+
+        // If we tested points and none hit our target or its nested contents, it's occluded.
+        return testedPoints > 0 && hitCount === 0;
     }
 }
