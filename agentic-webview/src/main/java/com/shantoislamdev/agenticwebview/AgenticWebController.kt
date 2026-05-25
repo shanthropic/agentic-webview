@@ -42,6 +42,9 @@ class AgenticWebController(
     private val _state = MutableStateFlow<AgentState?>(null)
     val state: StateFlow<AgentState?> = _state.asStateFlow()
 
+    private val _loadingProgress = MutableStateFlow(0)
+    val loadingProgress: StateFlow<Int> = _loadingProgress.asStateFlow()
+
     fun attach(webView: AgenticWebView) {
         this.webView = webView
         webView.listener = object : AgenticWebView.AgenticWebViewListener {
@@ -55,6 +58,7 @@ class AgenticWebController(
             }
 
             override fun onProgressChanged(progress: Int) {
+                _loadingProgress.value = progress
                 if (progress == 100) {
                     startSettlementTimer()
                 }

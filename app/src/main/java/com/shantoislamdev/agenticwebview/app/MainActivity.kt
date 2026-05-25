@@ -5,13 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,29 +24,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.ImeAction
 import com.shantoislamdev.agenticwebview.models.AgentAction
 import com.shantoislamdev.agenticwebview.AgenticWebView
 import com.shantoislamdev.agenticwebview.AgenticWebViewComposable
 import com.shantoislamdev.agenticwebview.app.ui.AgenticWebViewModel
 import com.shantoislamdev.agenticwebview.app.ui.ChatMessage
 import com.shantoislamdev.agenticwebview.app.ui.AgentSettings
-import com.shantoislamdev.agenticwebview.app.ui.theme.WebviewAgentTheme
+import com.shantoislamdev.agenticwebview.app.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: AgenticWebViewModel by viewModels()
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AgenticWebView.init()
         enableEdgeToEdge()
         setContent {
-            WebviewAgentTheme {
+            AppTheme {
                 MainScreen(viewModel)
             }
         }
@@ -54,54 +62,45 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
     var showSettings by remember { mutableStateOf(false) }
     val messages = viewModel.messages
     val isThinking by viewModel.isThinking.collectAsState()
+    val loadingProgress by viewModel.loadingProgress.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val scope = rememberCoroutineScope()
+    val scaffoldState = rememberBottomSheetScaffoldState()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 120.dp,
+        sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         topBar = {
-            BrowserTopBar(onNavigate = { url ->
-                scope.launch {
-                    viewModel.controller.executeAction(AgentAction.Navigate(url))
-                }
-            })
+            BrowserTopBar(
+                progress = loadingProgress,
+                onNavigate = { url ->
+                    scope.launch {
+                        viewModel.controller.executeAction(AgentAction.Navigate(url))
+                    }
+                },
+                onSettingsClick = { showSettings = true }
+            )
+        },
+        sheetContent = {
+            AgentChatArea(
+                messages = messages,
+                isThinking = isThinking,
+                onSend = { viewModel.sendMessage(it) }
+            )
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
         ) {
-            // WebView Area (55%)
-            Box(modifier = Modifier.weight(0.55f)) {
-                AgenticWebViewComposable(
-                    controller = viewModel.controller,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-
-            // Agent Area (45%)
-            Column(modifier = Modifier.weight(0.45f)) {
-                AgentChatHeader(
-                    isThinking = isThinking,
-                    onSettingsClick = { showSettings = true }
-                )
-                
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    reverseLayout = false
-                ) {
-                    items(messages) { message ->
-                        ChatBubble(message)
-                    }
-                }
-
-                ChatInput(onSend = { viewModel.sendMessage(it) })
-            }
+            AgenticWebViewComposable(
+                controller = viewModel.controller,
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
         if (showSettings) {
@@ -114,86 +113,157 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BrowserTopBar(onNavigate: (String) -> Unit) {
+fun BrowserTopBar(
+    progress: Int,
+    onNavigate: (String) -> Unit,
+    onSettingsClick: () -> Unit
+) {
     var urlText by remember { mutableStateOf("https://www.google.com") }
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.statusBarsPadding()
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 2.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { /* Back */ }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            IconButton(onClick = { /* Forward */ }) {
-                Icon(Icons.Default.ArrowForward, contentDescription = "Forward")
-            }
-            IconButton(onClick = { /* Refresh */ }) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            }
-
-            TextField(
-                value = urlText,
-                onValueChange = { urlText = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(24.dp)),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    IconButton(onClick = { onNavigate(urlText) }) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "Go")
+        Column {
+            CenterAlignedTopAppBar(
+                title = {
+                    TextField(
+                        value = urlText,
+                        onValueChange = { urlText = it },
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(48.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        ),
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                        trailingIcon = {
+                            if (urlText.isNotEmpty()) {
+                                IconButton(onClick = { urlText = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear", modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = CircleShape,
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                        keyboardActions = KeyboardActions(onGo = { onNavigate(urlText) })
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 },
-                singleLine = true,
-                shape = RoundedCornerShape(24.dp),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-                keyboardActions = KeyboardActions(onGo = { onNavigate(urlText) })
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
+            
+            if (progress < 100) {
+                LinearProgressIndicator(
+                    progress = { progress / 100f },
+                    modifier = Modifier.fillMaxWidth().height(2.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = Color.Transparent
+                )
+            } else {
+                Spacer(modifier = Modifier.height(2.dp))
+            }
         }
     }
 }
 
 @Composable
-fun AgentChatHeader(isThinking: Boolean, onSettingsClick: () -> Unit) {
-    Row(
+fun AgentChatArea(
+    messages: List<ChatMessage>,
+    isThinking: Boolean,
+    onSend: (String) -> Unit
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .heightIn(min = 400.dp, max = 600.dp)
+            .padding(bottom = 16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (isThinking) Color.Yellow else Color.Green)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = if (isThinking) "Thinking..." else "Idle",
-                style = MaterialTheme.typography.labelMedium
+                "Agentic Assistant",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
             )
+            
+            ThinkingIndicator(isThinking)
         }
 
-        IconButton(onClick = onSettingsClick) {
-            Icon(Icons.Default.Settings, contentDescription = "Settings")
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(messages) { message ->
+                ChatBubble(message)
+            }
         }
+
+        ChatInput(onSend = onSend)
+    }
+}
+
+@Composable
+fun ThinkingIndicator(isThinking: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val infiniteTransition = rememberInfiniteTransition(label = "thinking")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "alpha"
+        )
+
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(if (isThinking) MaterialTheme.colorScheme.primary.copy(alpha = alpha) else MaterialTheme.colorScheme.outlineVariant)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = if (isThinking) "Thinking..." else "Ready",
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isThinking) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 @Composable
 fun ChatBubble(message: ChatMessage) {
+    val bubbleColor = if (message.isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer
+    val contentColor = if (message.isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+    
+    val shape = if (message.isUser) {
+        RoundedCornerShape(20.dp, 4.dp, 20.dp, 20.dp)
+    } else {
+        RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,14 +271,15 @@ fun ChatBubble(message: ChatMessage) {
         horizontalAlignment = if (message.isUser) Alignment.End else Alignment.Start
     ) {
         Surface(
-            color = if (message.isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.widthIn(max = 280.dp)
+            color = bubbleColor,
+            contentColor = contentColor,
+            shape = shape,
+            tonalElevation = 1.dp
         ) {
             Text(
                 text = message.message,
-                modifier = Modifier.padding(12.dp, 8.dp),
-                style = MaterialTheme.typography.bodyMedium
+                modifier = Modifier.padding(16.dp, 10.dp),
+                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp)
             )
         }
     }
@@ -218,38 +289,56 @@ fun ChatBubble(message: ChatMessage) {
 fun ChatInput(onSend: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
 
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shape = CircleShape,
+        tonalElevation = 3.dp,
+        shadowElevation = 2.dp
     ) {
-        TextField(
-            value = text,
-            onValueChange = { text = it },
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(24.dp)),
-            placeholder = { Text("Type a message...") },
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(24.dp),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        IconButton(
-            onClick = {
-                onSend(text)
-                text = ""
-            },
-            colors = IconButtonDefaults.iconButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Send, contentDescription = "Send")
+            TextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp),
+                placeholder = { Text("Ask your agent...", style = MaterialTheme.typography.bodyMedium) },
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
+                singleLine = false,
+                maxLines = 4
+            )
+            
+            IconButton(
+                onClick = {
+                    if (text.isNotBlank()) {
+                        onSend(text)
+                        text = ""
+                    }
+                },
+                enabled = text.isNotBlank(),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", modifier = Modifier.size(20.dp))
+            }
         }
     }
 }
@@ -263,58 +352,123 @@ fun SettingsSheet(
 ) {
     var localSettings by remember { mutableStateOf(settings) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
         Column(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth()
                 .navigationBarsPadding()
         ) {
-            Text("Agent Settings", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Simulation Mode", modifier = Modifier.weight(1f))
-                Switch(
-                    checked = localSettings.useSimulation,
-                    onCheckedChange = { localSettings = localSettings.copy(useSimulation = it) }
-                )
-            }
-
-            if (!localSettings.useSimulation) {
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = localSettings.baseUrl,
-                    onValueChange = { localSettings = localSettings.copy(baseUrl = it) },
-                    label = { Text("Base URL") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = localSettings.apiKey,
-                    onValueChange = { localSettings = localSettings.copy(apiKey = it) },
-                    label = { Text("API Key") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = localSettings.modelName,
-                    onValueChange = { localSettings = localSettings.copy(modelName = it) },
-                    label = { Text("Model Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
+            Text(
+                "Agent Configuration",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(24.dp))
+
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Simulation Mode", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Use mock responses for testing",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = localSettings.useSimulation,
+                        onCheckedChange = { localSettings = localSettings.copy(useSimulation = it) }
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = !localSettings.useSimulation,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    OutlinedTextField(
+                        value = localSettings.baseUrl,
+                        onValueChange = { localSettings = localSettings.copy(baseUrl = it) },
+                        label = { Text("Base URL") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = localSettings.apiKey,
+                        onValueChange = { localSettings = localSettings.copy(apiKey = it) },
+                        label = { Text("API Key") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = localSettings.modelName,
+                        onValueChange = { localSettings = localSettings.copy(modelName = it) },
+                        label = { Text("Model Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
                     onSave(localSettings)
                     onDismiss()
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Text("Save")
+                Text("Save Settings", style = MaterialTheme.typography.titleMedium)
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BrowserTopBarPreview() {
+    AppTheme {
+        BrowserTopBar(progress = 45, onNavigate = {}, onSettingsClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChatBubbleUserPreview() {
+    AppTheme {
+        ChatBubble(ChatMessage("User", "Hello agent, can you help me?", true))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChatBubbleAgentPreview() {
+    AppTheme {
+        ChatBubble(ChatMessage("Agent", "Sure! I can help you with that. What do you need?", false))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChatInputPreview() {
+    AppTheme {
+        ChatInput(onSend = {})
     }
 }

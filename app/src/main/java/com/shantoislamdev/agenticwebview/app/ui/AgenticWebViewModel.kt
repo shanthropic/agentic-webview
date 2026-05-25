@@ -68,6 +68,8 @@ class AgenticWebViewModel(application: Application) : AndroidViewModel(applicati
     private val _isThinking = MutableStateFlow(false)
     val isThinking: StateFlow<Boolean> = _isThinking.asStateFlow()
 
+    val loadingProgress: StateFlow<Int> = controller.loadingProgress
+
     init {
         _messages.add(ChatMessage("Agent", "Hello! I'm your Agentic WebView assistant. How can I help you today?", false))
         
