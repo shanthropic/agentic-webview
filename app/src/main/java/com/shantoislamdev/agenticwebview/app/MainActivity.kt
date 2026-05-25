@@ -20,6 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import com.shantoislamdev.agenticwebview.models.AgentAction
 import com.shantoislamdev.agenticwebview.AgenticWebView
 import com.shantoislamdev.agenticwebview.AgenticWebViewComposable
 import com.shantoislamdev.agenticwebview.app.ui.AgenticWebViewModel
@@ -50,12 +55,15 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
     val messages = viewModel.messages
     val isThinking by viewModel.isThinking.collectAsState()
     val settings by viewModel.settings.collectAsState()
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            BrowserTopBar(onNavigate = { url -> 
-                // Navigation logic
+            BrowserTopBar(onNavigate = { url ->
+                scope.launch {
+                    viewModel.controller.executeAction(AgentAction.Navigate(url))
+                }
             })
         }
     ) { innerPadding ->
@@ -141,8 +149,15 @@ fun BrowserTopBar(onNavigate: (String) -> Unit) {
                     unfocusedIndicatorColor = Color.Transparent
                 ),
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    IconButton(onClick = { onNavigate(urlText) }) {
+                        Icon(Icons.Default.ArrowForward, contentDescription = "Go")
+                    }
+                },
                 singleLine = true,
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(24.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                keyboardActions = KeyboardActions(onGo = { onNavigate(urlText) })
             )
         }
     }

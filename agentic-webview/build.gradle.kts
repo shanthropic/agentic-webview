@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // License Information
@@ -41,6 +42,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.webkit)
+    implementation(libs.kotlinx.serialization.json)
     
     // Compose
     implementation(platform(libs.androidx.compose.bom))

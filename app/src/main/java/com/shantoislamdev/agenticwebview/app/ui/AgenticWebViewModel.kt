@@ -6,6 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.shantoislamdev.agenticwebview.AgenticWebController
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
 import com.shantoislamdev.agenticwebview.app.agent.*
+import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.singleRunStrategy
+import ai.koog.agents.core.tools.ToolRegistryBuilder
+import ai.koog.agents.core.tools.reflect.asTools
+import ai.koog.prompt.executor.clients.openai.OpenAILLMClient
+import ai.koog.prompt.executor.clients.openai.OpenAIClientSettings
+import ai.koog.prompt.executor.llms.MultiLLMPromptExecutor
+import ai.koog.prompt.llm.LLModel
+import ai.koog.prompt.llm.LLMProvider
+import ai.koog.prompt.llm.LLMCapability
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +30,7 @@ data class ChatMessage(
 
 data class AgentSettings(
     val useSimulation: Boolean = true,
-    val baseUrl: String = "https://api.openai.com/v1",
+    val baseUrl: String = "https://api.openai.com",
     val apiKey: String = "",
     val modelName: String = "gpt-4-turbo"
 )
@@ -52,12 +62,17 @@ class AgenticWebViewModel : ViewModel() {
         
         viewModelScope.launch {
             _isThinking.value = true
-            if (_settings.value.useSimulation) {
-                runSimulation(text)
-            } else {
-                runLiveAgent(text)
+            try {
+                if (_settings.value.useSimulation) {
+                    runSimulation(text)
+                } else {
+                    runLiveAgent(text)
+                }
+            } catch (e: Exception) {
+                _messages.add(ChatMessage("Agent", "Error: ${e.message}", false))
+            } finally {
+                _isThinking.value = false
             }
-            _isThinking.value = false
         }
     }
 
@@ -76,8 +91,58 @@ class AgenticWebViewModel : ViewModel() {
     }
 
     private suspend fun runLiveAgent(text: String) {
-        _messages.add(ChatMessage("Agent", "Connecting to live agent...", false))
-        delay(2000)
-        _messages.add(ChatMessage("Agent", "Live agent mode active (Mocked loop)", false))
+        val currentSettings = _settings.value
+        if (currentSettings.apiKey.isBlank()) {
+            _messages.add(ChatMessage("Agent", "Please set an API Key in settings.", false))
+            return
+        }
+
+        _messages.add(ChatMessage("Agent", "Connecting to live agent (Koog)...", false))
+        
+        val tools = AgenticWebviewTools(controller)
+        val registry = ToolRegistryBuilder().apply {
+            tools(AgenticWebviewTools::class.asTools(tools))
+        }.build()
+
+        // Configure custom OpenAI client for custom base URL support
+        val clientSettings = OpenAIClientSettings(
+            baseUrl = currentSettings.baseUrl
+        )
+        val llmClient = OpenAILLMClient(currentSettings.apiKey, clientSettings)
+        val promptExecutor = MultiLLMPromptExecutor(llmClient)
+        
+        // Define custom model with hardcoded constraints: 128k context, 64k max output
+        val customModel = LLModel(
+            provider = LLMProvider.OpenAI,
+            id = currentSettings.modelName,
+            capabilities = listOf(
+                LLMCapability.Temperature,
+                LLMCapability.Tools,
+                LLMCapability.Completion,
+                LLMCapability.OpenAIEndpoint.Completions,
+                LLMCapability.Vision.Image
+            ),
+            contextLength = 128000L,
+            maxOutputTokens = 64000L
+        )
+        
+        val agent = AIAgent<String, String>(
+            promptExecutor = promptExecutor,
+            llmModel = customModel,
+            strategy = singleRunStrategy(),
+            systemPrompt = """
+                You are a web browsing agent. Use the provided tools to interact with the webview.
+                Always start by calling 'webview_get_state' to see what's on the page.
+                When you are done or have found the answer, speak to the user.
+            """.trimIndent(),
+            toolRegistry = registry
+        )
+
+        try {
+            val response = agent.run(text)
+            _messages.add(ChatMessage("Agent", response.toString(), false))
+        } catch (e: Exception) {
+            _messages.add(ChatMessage("Agent", "Koog Error: ${e.message}", false))
+        }
     }
 }

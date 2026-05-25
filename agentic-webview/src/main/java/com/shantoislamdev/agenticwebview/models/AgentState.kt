@@ -1,5 +1,8 @@
 package com.shantoislamdev.agenticwebview.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AgentState(
     val accessibilityTree: String,
     val screenshotBase64: String?,
@@ -11,6 +14,7 @@ data class AgentState(
     val truncated: Boolean
 )
 
+@Serializable
 data class ViewportInfo(
     val devicePixelRatio: Double,
     val visualViewportScale: Double,
