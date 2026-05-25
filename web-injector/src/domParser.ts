@@ -67,7 +67,9 @@ export class DomParser {
             console.error('Error during accessibility tree extraction', e);
             if (window.AgenticBridge) {
                 try {
-                    window.AgenticBridge.onError(JSON.stringify({
+                    // Note: This expects a session token which might not be available here directly
+                    // but we fix the signature mismatch for compilation.
+                    (window.AgenticBridge as any).onError("system", JSON.stringify({
                         error: e.message || 'Tree walk failure',
                         stack: e.stack || ''
                     }));

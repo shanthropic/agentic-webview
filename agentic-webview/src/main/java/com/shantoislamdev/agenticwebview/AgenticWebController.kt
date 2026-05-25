@@ -109,9 +109,9 @@ class AgenticWebController(
                 accessibilityTree = treeObj.getString("tree"),
                 screenshotBase64 = screenshot,
                 viewportInfo = parseViewportInfo(viewportObj),
-                url = wv.url ?: "",
-                title = wv.title ?: "",
-                pageState = wv.pageLifecycleState,
+                url = withContext(Dispatchers.Main) { wv.url } ?: "",
+                title = withContext(Dispatchers.Main) { wv.title } ?: "",
+                pageState = withContext(Dispatchers.Main) { wv.pageLifecycleState },
                 elementCount = treeObj.getJSONArray("tree").length(),
                 truncated = treeObj.getBoolean("truncated")
             ))
@@ -149,13 +149,17 @@ class AgenticWebController(
 
     private suspend fun handleClick(agentId: String): AgentResult<Unit> {
         val coords = getElementCoords(agentId) ?: return AgentResult.Error(AgentError.ElementNotFound(agentId))
-        dispatchTouch(coords.first, coords.second)
+        withContext(Dispatchers.Main) {
+            dispatchTouch(coords.first, coords.second)
+        }
         return AgentResult.Success(Unit)
     }
 
     private suspend fun handleLongPress(agentId: String, durationMs: Long): AgentResult<Unit> {
         val coords = getElementCoords(agentId) ?: return AgentResult.Error(AgentError.ElementNotFound(agentId))
-        dispatchTouch(coords.first, coords.second, durationMs)
+        withContext(Dispatchers.Main) {
+            dispatchTouch(coords.first, coords.second, durationMs)
+        }
         return AgentResult.Success(Unit)
     }
 
@@ -164,7 +168,9 @@ class AgenticWebController(
         val coords = getElementCoords(agentId) ?: return AgentResult.Error(AgentError.ElementNotFound(agentId))
         
         // Focus first
-        dispatchTouch(coords.first, coords.second)
+        withContext(Dispatchers.Main) {
+            dispatchTouch(coords.first, coords.second)
+        }
         delay(200)
 
         val success = evalJs("__AgenticInternal.setInputValue('$agentId', '$text')").toBoolean()
@@ -189,11 +195,15 @@ class AgenticWebController(
 
     private suspend fun handleNavigate(url: String): AgentResult<Unit> {
         val wv = webView ?: return AgentResult.Error(AgentError.PageNotReady(PageLifecycleState.IDLE))
-        wv.loadUrl(url)
+        withContext(Dispatchers.Main) {
+            wv.loadUrl(url)
+        }
         
         // Wait for completion or timeout
         return withTimeoutOrNull(config.pageSettleTimeoutMs) {
-            while (wv.pageLifecycleState != PageLifecycleState.COMPLETE) {
+            while (true) {
+                val state = withContext(Dispatchers.Main) { wv.pageLifecycleState }
+                if (state == PageLifecycleState.COMPLETE) break
                 delay(100)
             }
             AgentResult.Success(Unit)
@@ -227,8 +237,8 @@ class AgenticWebController(
         pendingPromises[promiseId]?.complete(result)
     }
 
-    private suspend fun dispatchTouch(x: Float, y: Float, durationMs: Long = 0) {
-        val wv = webView ?: return
+    private suspend fun dispatchTouch(x: Float, y: Float, durationMs: Long = 0) = withContext(Dispatchers.Main) {
+        val wv = webView ?: return@withContext
         val downTime = SystemClock.uptimeMillis()
         val downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
         wv.dispatchTouchEvent(downEvent)
@@ -242,17 +252,19 @@ class AgenticWebController(
         wv.dispatchTouchEvent(upEvent)
     }
 
-    private suspend fun evalJs(script: String): String = withTimeout(config.jsEvaluationTimeoutMs) {
-        suspendCancellableCoroutine { cont ->
-            webView?.evaluateJavascript(script) { result ->
-                // evaluateJavascript returns JSON-formatted string (e.g. "\"value\"")
-                val cleanResult = if (result != null && result.startsWith("\"") && result.endsWith("\"")) {
-                    result.substring(1, result.length - 1).replace("\\\"", "\"")
-                } else {
-                    result ?: ""
-                }
-                cont.resume(cleanResult)
-            } ?: cont.resume("")
+    private suspend fun evalJs(script: String): String = withContext(Dispatchers.Main) {
+        withTimeout(config.jsEvaluationTimeoutMs) {
+            suspendCancellableCoroutine { cont ->
+                webView?.evaluateJavascript(script) { result ->
+                    // evaluateJavascript returns JSON-formatted string (e.g. "\"value\"")
+                    val cleanResult = if (result != null && result.startsWith("\"") && result.endsWith("\"") && result.length >= 2) {
+                        result.substring(1, result.length - 1).replace("\\\"", "\"")
+                    } else {
+                        result ?: ""
+                    }
+                    cont.resume(cleanResult)
+                } ?: cont.resume("")
+            }
         }
     }
 

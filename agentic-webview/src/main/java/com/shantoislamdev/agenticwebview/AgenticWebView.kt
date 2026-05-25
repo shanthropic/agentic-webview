@@ -32,6 +32,7 @@ class AgenticWebView @JvmOverloads constructor(
 
     companion object {
         const val BRIDGE_VERSION = 1
+        private var isDataDirSet = false
 
         fun init() {
             // Placeholder for library initialization
@@ -55,7 +56,14 @@ class AgenticWebView @JvmOverloads constructor(
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             userAgentString = config.userAgent ?: userAgentString
         }
-        setDataDirectorySuffix("agentic_webview")
+        if (!isDataDirSet) {
+            try {
+                setDataDirectorySuffix("agentic_webview")
+                isDataDirSet = true
+            } catch (e: Exception) {
+                // Ignore if already set
+            }
+        }
     }
 
     private fun setupClients() {

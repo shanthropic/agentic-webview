@@ -57,6 +57,7 @@ dependencies {
     androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.mockwebserver)
     androidTestImplementation(libs.turbine)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
 val bundleWebInjector by tasks.registering(Exec::class) {
