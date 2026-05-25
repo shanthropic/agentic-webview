@@ -1,11 +1,12 @@
 package com.shantoislamdev.agenticwebview.app.ui
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shantoislamdev.agenticwebview.AgenticWebController
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
 import com.shantoislamdev.agenticwebview.app.agent.*
+import com.shantoislamdev.agenticwebview.app.model.AgentSettingsEntity
+import com.shantoislamdev.agenticwebview.app.model.AppDatabase
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.singleRunStrategy
 import ai.koog.agents.core.tools.ToolRegistryBuilder
@@ -16,9 +17,12 @@ import ai.koog.prompt.executor.llms.MultiLLMPromptExecutor
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLMCapability
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
@@ -35,7 +39,24 @@ data class AgentSettings(
     val modelName: String = "gpt-4-turbo"
 )
 
-class AgenticWebViewModel : ViewModel() {
+fun AgentSettings.toEntity() = AgentSettingsEntity(
+    useSimulation = useSimulation,
+    baseUrl = baseUrl,
+    apiKey = apiKey,
+    modelName = modelName
+)
+
+fun AgentSettingsEntity.toDomain() = AgentSettings(
+    useSimulation = useSimulation,
+    baseUrl = baseUrl,
+    apiKey = apiKey,
+    modelName = modelName
+)
+
+class AgenticWebViewModel(application: Application) : AndroidViewModel(application) {
+    private val db = AppDatabase.getDatabase(application)
+    private val dao = db.agentSettingsDao()
+
     val controller = AgenticWebController(AgenticWebViewConfig())
     
     private val _messages = mutableStateListOf<ChatMessage>()
@@ -49,10 +70,20 @@ class AgenticWebViewModel : ViewModel() {
 
     init {
         _messages.add(ChatMessage("Agent", "Hello! I'm your Agentic WebView assistant. How can I help you today?", false))
+        
+        viewModelScope.launch {
+            dao.getSettings().collectLatest { entity ->
+                entity?.let {
+                    _settings.value = it.toDomain()
+                }
+            }
+        }
     }
 
     fun updateSettings(newSettings: AgentSettings) {
-        _settings.value = newSettings
+        viewModelScope.launch {
+            dao.insertSettings(newSettings.toEntity())
+        }
     }
 
     fun sendMessage(text: String) {
