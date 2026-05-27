@@ -1,4 +1,5 @@
 import { BuildDomTreeEngine, DomNodeData, BuildDomTreeResult } from './buildDomTree';
+import { enhancedCssSelectorForElement } from './cssSelector';
 
 export interface ElementBounds {
     left: number;
@@ -20,12 +21,34 @@ export interface AccessibilityNode {
     isTopElement: boolean;
     isInteractive: boolean;
     highlightIndex: number | null;
+    cssSelector: string;
+    isNew: boolean;
+    depth: number;
 }
 
 export interface AccessibilityTreeResult {
     tree: AccessibilityNode[];
     truncated: boolean;
     selectorMap: Record<number, string>;
+    maxNodeId: number;
+    maxHighlightIndex: number;
+}
+
+function quickHash(node: AccessibilityNode): string {
+    const branchPath = (node.xpath || '').replace(/\[\d+\]/g, '');
+    const attrs = Object.entries(node.attributes)
+        .filter(([k]) => k !== 'data-agent-id')
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}=${v}`)
+        .join('|');
+    let h1 = 0, h2 = 0;
+    for (let i = 0; i < branchPath.length; i++) {
+        h1 = ((h1 << 5) - h1 + branchPath.charCodeAt(i)) | 0;
+    }
+    for (let i = 0; i < attrs.length; i++) {
+        h2 = ((h2 << 5) - h2 + attrs.charCodeAt(i)) | 0;
+    }
+    return `${h1}-${h2}-${node.xpath || ''}`;
 }
 
 export class DomParser {
@@ -33,6 +56,7 @@ export class DomParser {
     private engine: BuildDomTreeEngine;
     private viewportExpansion: number;
     private subframeTrees: Map<string, AccessibilityNode[]> = new Map();
+    private previousElementHashes: Map<number, string> = new Map();
 
     constructor(viewportExpansion: number = 0) {
         this.viewportExpansion = viewportExpansion;
@@ -40,6 +64,7 @@ export class DomParser {
     }
 
     public getAccessibilityTree(maxElements: number = 500): AccessibilityTreeResult {
+        this.subframeTrees.clear();
         this.elementMap.clear();
         this.engine = new BuildDomTreeEngine(this.viewportExpansion, this.elementMap);
 
@@ -47,7 +72,7 @@ export class DomParser {
         const nodes: AccessibilityNode[] = [];
         const selectorMap: Record<number, string> = {};
 
-        this.processNodeMap(result.map, result.rootId, nodes, selectorMap, false, maxElements);
+        this.processNodeMap(result.map, result.rootId, nodes, selectorMap, false, maxElements, 0);
 
         // Merge subframe trees
         for (const [url, subframeNodes] of this.subframeTrees) {
@@ -61,12 +86,34 @@ export class DomParser {
             }
         }
 
+        // Compute isNew flag via hash diffing
+        const currentHashes = new Map<number, string>();
+        for (const node of nodes) {
+            if (node.highlightIndex !== null && node.highlightIndex !== undefined) {
+                const hash = quickHash(node);
+                currentHashes.set(node.highlightIndex, hash);
+                node.isNew = !this.previousElementHashes.has(node.highlightIndex)
+                    || this.previousElementHashes.get(node.highlightIndex) !== hash;
+            }
+        }
+        this.previousElementHashes = currentHashes;
+
         this.pruneElementMap();
+
+        // Compute max IDs for cross-frame offset management
+        let maxNodeId = 0;
+        for (const id of Object.keys(result.map)) {
+            const numId = parseInt(id, 10);
+            if (!isNaN(numId) && numId > maxNodeId) maxNodeId = numId;
+        }
+        const maxHighlightIndex = result.highlightIndexCount;
 
         return {
             tree: nodes,
             truncated: nodes.length >= maxElements,
             selectorMap,
+            maxNodeId,
+            maxHighlightIndex,
         };
     }
 
@@ -77,6 +124,7 @@ export class DomParser {
         selectorMap: Record<number, string>,
         inIframe: boolean,
         maxElements: number,
+        depth: number,
     ): void {
         if (nodes.length >= maxElements) return;
 
@@ -89,6 +137,10 @@ export class DomParser {
             if (nodeData.highlightIndex !== undefined && nodeData.highlightIndex !== null) {
                 const agentId = nodeData.highlightIndex.toString();
                 const el = this.elementMap.get(agentId);
+
+                const cssSelector = enhancedCssSelectorForElement(
+                    nodeData.tagName, nodeData.xpath, nodeData.attributes, nodeData.highlightIndex
+                );
 
                 const node: AccessibilityNode = {
                     id: agentId,
@@ -103,6 +155,9 @@ export class DomParser {
                     isTopElement: nodeData.isTopElement || false,
                     isInteractive: nodeData.isInteractive || false,
                     highlightIndex: nodeData.highlightIndex,
+                    cssSelector,
+                    isNew: false,
+                    depth,
                 };
 
                 nodes.push(node);
@@ -121,20 +176,27 @@ export class DomParser {
 
             // Recurse into children
             for (const childId of nodeData.children) {
-                this.processNodeMap(map, childId, nodes, selectorMap, inIframe, maxElements);
+                this.processNodeMap(map, childId, nodes, selectorMap, inIframe, maxElements, depth + 1);
             }
         }
     }
 
     private extractText(nodeData: DomNodeData, map: Record<string, DomNodeData>): string {
-        // Collect text from direct text-node children
         const textParts: string[] = [];
-        for (const childId of nodeData.children) {
-            const child = map[childId];
-            if (child && child.type === 'TEXT_NODE' && child.text && child.isVisible) {
-                textParts.push(child.text);
+        const collectText = (data: DomNodeData) => {
+            for (const childId of data.children) {
+                const child = map[childId];
+                if (!child) continue;
+                if (child.type === 'TEXT_NODE' && child.text && child.isVisible) {
+                    textParts.push(child.text);
+                } else if (child.tagName && child.type !== 'TEXT_NODE') {
+                    if (child.highlightIndex === undefined || child.highlightIndex === null) {
+                        collectText(child);
+                    }
+                }
             }
-        }
+        };
+        collectText(nodeData);
         if (textParts.length > 0) return textParts.join(' ').trim();
 
         // Fallback to attributes

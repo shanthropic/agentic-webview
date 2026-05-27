@@ -17,6 +17,7 @@ export interface BuildDomTreeResult {
     rootId: string;
     map: Record<string, DomNodeData>;
     highlightIndexCount: number;
+    nextId: number;
 }
 
 const MAX_DEPTH = 100;
@@ -83,9 +84,9 @@ export class BuildDomTreeEngine {
         this.elementMap = elementMap;
     }
 
-    build(): BuildDomTreeResult {
-        this.highlightIndex = 0;
-        this.nextId = 0;
+    build(startId?: number, startHighlightIndex?: number): BuildDomTreeResult {
+        this.highlightIndex = startHighlightIndex ?? 0;
+        this.nextId = startId ?? 0;
         this.visitedNodes = null;
         this.domMap = {};
         this.boundingRects = new WeakMap();
@@ -98,6 +99,7 @@ export class BuildDomTreeEngine {
             rootId: rootId || '',
             map: this.domMap,
             highlightIndexCount: this.highlightIndex,
+            nextId: this.nextId,
         };
     }
 

@@ -15,12 +15,13 @@ sealed class AgentAction {
     data class SendKeys(val keys: String) : AgentAction()
     data class ScrollToPercent(val yPercent: Float, val agentId: String? = null) : AgentAction()
     data class ScrollToText(val text: String, val nth: Int = 0) : AgentAction()
-    data object ScrollToTop : AgentAction()
-    data object ScrollToBottom : AgentAction()
-    data object PreviousPage : AgentAction()
-    data object NextPage : AgentAction()
+    data class ScrollToTop(val agentId: String? = null) : AgentAction()
+    data class ScrollToBottom(val agentId: String? = null) : AgentAction()
+    data class PreviousPage(val agentId: String? = null) : AgentAction()
+    data class NextPage(val agentId: String? = null) : AgentAction()
     data class GetDropdownOptions(val agentId: String) : AgentAction()
     data class SelectDropdownOption(val agentId: String, val text: String) : AgentAction()
+    data class Done(val text: String, val success: Boolean) : AgentAction()
 }
 
 enum class ScrollDirection { UP, DOWN, LEFT, RIGHT }

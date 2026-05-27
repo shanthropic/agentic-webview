@@ -9,6 +9,14 @@ const parser = new DomParser();
 const interaction = new InteractionHandler();
 const bridge = new Bridge();
 
+// ─── Runtime Config ──────────────────────────────────────────────
+let runtimeConfig = {
+    viewportExpansion: 0,
+    domMutationThrottleMs: 300,
+    enableAntiDetection: true,
+    includeAttributes: null as string[] | null,
+};
+
 // ─── Engine Object ─────────────────────────────────────────────────
 // CRITICAL: Assign to window FIRST, before any initialization code
 // that could throw (MutationObserver, IframeMessageBus, anti-detection).
@@ -61,6 +69,47 @@ export const AgenticEngine = {
             return serializeTreeToText(tree);
         } catch (e) {
             return '';
+        }
+    },
+
+    configure(configJson: string) {
+        try {
+            const cfg = JSON.parse(configJson);
+            if (cfg.viewportExpansion !== undefined) runtimeConfig.viewportExpansion = cfg.viewportExpansion;
+            if (cfg.domMutationThrottleMs !== undefined) runtimeConfig.domMutationThrottleMs = cfg.domMutationThrottleMs;
+            if (cfg.enableAntiDetection !== undefined) runtimeConfig.enableAntiDetection = cfg.enableAntiDetection;
+            if (cfg.includeAttributes !== undefined) runtimeConfig.includeAttributes = cfg.includeAttributes;
+        } catch (e) { /* ignore */ }
+    },
+
+    getFullCapture(maxElements?: number) {
+        try {
+            const result = parser.getAccessibilityTree(maxElements);
+            const viewportInfo = JSON.parse(AgenticEngine.getViewportInfo());
+            const compactTree = serializeTreeToText(
+                result.tree,
+                runtimeConfig.includeAttributes,
+                undefined,
+                {
+                    scrollY: viewportInfo.scrollY || 0,
+                    scrollHeight: document.documentElement?.scrollHeight || 0,
+                    viewportHeight: viewportInfo.viewportHeight || window.innerHeight || 0,
+                },
+                false
+            );
+            return JSON.stringify({
+                tree: result.tree,
+                truncated: result.truncated,
+                selectorMap: result.selectorMap,
+                compactTree,
+                maxNodeId: result.maxNodeId,
+                maxHighlightIndex: result.maxHighlightIndex,
+            });
+        } catch (e) {
+            return JSON.stringify({
+                tree: [], truncated: false, selectorMap: {}, compactTree: '',
+                maxNodeId: 0, maxHighlightIndex: 0,
+            });
         }
     },
 
@@ -201,6 +250,14 @@ export const AgenticEngine = {
     dismissDialogs() {
         // Placeholder — Kotlin side handles via WebChromeClient overrides.
     },
+
+    isFileUploader(agentId: string) {
+        try {
+            const el = parser.getElementById(agentId);
+            if (el) return interaction.isFileUploader(el);
+            return false;
+        } catch (e) { return false; }
+    },
 };
 
 // ─── Assign to window IMMEDIATELY ──────────────────────────────────
@@ -212,6 +269,7 @@ export const AgenticEngine = {
 // ─── Post-assignment initialization (safe to crash) ────────────────
 
 function injectAntiDetection(): void {
+    if (!runtimeConfig.enableAntiDetection) return;
     try {
         Object.defineProperty(navigator, 'webdriver', { get: function() { return undefined; } });
     } catch (e) { /* ignore */ }
@@ -240,7 +298,7 @@ function setupMutationObserverSafe(): void {
                 var result = parser.getAccessibilityTree();
                 bridge.notifyDomUpdate(JSON.stringify({ tree: result.tree, selectorMap: result.selectorMap }));
             } catch (e) { /* ignore mutation observer errors */ }
-        });
+        }, runtimeConfig.domMutationThrottleMs);
     } catch (e) {
         // MutationObserver setup failed — non-fatal, bridge updates won't fire
     }

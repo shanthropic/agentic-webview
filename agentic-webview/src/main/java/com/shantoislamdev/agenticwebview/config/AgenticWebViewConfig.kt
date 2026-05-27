@@ -13,6 +13,8 @@ data class AgenticWebViewConfig(
     val enableDebugLogging: Boolean = false,
     val userAgent: String? = null,
     val allowedHosts: Set<String>? = null,
+    val deniedHosts: Set<String>? = null,
+    val homeUrl: String? = null,
     val viewportExpansion: Int = 0,
     val elementStabilityTimeoutMs: Long = 1000L,
     val enableAntiDetection: Boolean = true,
@@ -31,6 +33,8 @@ data class AgenticWebViewConfig(
         private var enableDebugLogging: Boolean = false
         private var userAgent: String? = null
         private var allowedHosts: Set<String>? = null
+        private var deniedHosts: Set<String>? = null
+        private var homeUrl: String? = null
         private var viewportExpansion: Int = 0
         private var elementStabilityTimeoutMs: Long = 1000L
         private var enableAntiDetection: Boolean = true
@@ -48,6 +52,8 @@ data class AgenticWebViewConfig(
         fun setEnableDebugLogging(enabled: Boolean) = apply { this.enableDebugLogging = enabled }
         fun setUserAgent(userAgent: String?) = apply { this.userAgent = userAgent }
         fun setAllowedHosts(hosts: Set<String>?) = apply { this.allowedHosts = hosts }
+        fun setDeniedHosts(hosts: Set<String>?) = apply { this.deniedHosts = hosts }
+        fun setHomeUrl(url: String?) = apply { this.homeUrl = url }
         fun setViewportExpansion(expansion: Int) = apply { this.viewportExpansion = expansion }
         fun setElementStabilityTimeoutMs(timeout: Long) = apply { this.elementStabilityTimeoutMs = timeout }
         fun setEnableAntiDetection(enabled: Boolean) = apply { this.enableAntiDetection = enabled }
@@ -57,7 +63,7 @@ data class AgenticWebViewConfig(
             jsEvaluationTimeoutMs, pageSettleTimeoutMs, pageSettleDebounceMs,
             screenshotEnabled, screenshotQuality, screenshotMaxDimension,
             maxDomElements, domMutationThrottleMs, actionRetryCount,
-            enableDebugLogging, userAgent, allowedHosts,
+            enableDebugLogging, userAgent, allowedHosts, deniedHosts, homeUrl,
             viewportExpansion, elementStabilityTimeoutMs,
             enableAntiDetection, includeAttributes
         )

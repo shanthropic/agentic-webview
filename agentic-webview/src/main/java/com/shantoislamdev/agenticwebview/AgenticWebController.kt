@@ -1,14 +1,10 @@
 package com.shantoislamdev.agenticwebview
 
-import android.app.Activity
-import android.graphics.Bitmap
-import android.graphics.Rect
 import android.os.*
-import android.util.Base64
 import android.view.MotionEvent
-import android.view.PixelCopy
-import androidx.core.graphics.createBitmap
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
+import com.shantoislamdev.agenticwebview.internal.JsEvaluator
+import com.shantoislamdev.agenticwebview.internal.ScreenshotCapture
 import com.shantoislamdev.agenticwebview.internal.SdkLogger
 import com.shantoislamdev.agenticwebview.models.*
 import kotlinx.coroutines.*
@@ -19,8 +15,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import kotlin.coroutines.resume
 
 class AgenticWebController(
     private val config: AgenticWebViewConfig = AgenticWebViewConfig()
@@ -33,13 +27,23 @@ class AgenticWebController(
 
     private val pendingPromises = mutableMapOf<String, CompletableDeferred<String>>()
 
-    private val pixelCopyThread = HandlerThread("PixelCopyThread").apply { start() }
-    private val pixelCopyHandler = Handler(pixelCopyThread.looper)
+    private val jsEvaluator = JsEvaluator(
+        webViewProvider = { webView },
+        timeoutMs = config.jsEvaluationTimeoutMs,
+        logger = logger
+    )
 
-    private var cachedBitmap: Bitmap? = null
+    private val screenshotCapture = ScreenshotCapture(
+        webViewProvider = { webView },
+        quality = config.screenshotQuality,
+        maxDimension = config.screenshotMaxDimension,
+        logger = logger
+    )
 
     var lastDropdownOptions: String? = null
         private set
+
+    private val occludedMap = mutableMapOf<String, Boolean>()
 
     private val _state = MutableStateFlow<AgentState?>(null)
     val state: StateFlow<AgentState?> = _state.asStateFlow()
@@ -89,6 +93,7 @@ class AgenticWebController(
 
             override fun onCrash(didRecover: Boolean) {
                 logger.e("Controller", "WebView crashed. Recovery attempted: $didRecover")
+                _state.value = null
             }
         }
     }
@@ -107,152 +112,86 @@ class AgenticWebController(
         }
     }
 
-    /**
-     * Core evaluateJavascript wrapper. Returns the raw string from the JS engine.
-     * Returns empty string on any failure (null callback, timeout, detached WebView).
-     * Never returns the literal string "null".
-     *
-     * The evaluateJavascript callback returns a JSON-serialized representation of
-     * the JS result. We use JSONTokener to decode it properly, handling all JSON
-     * escape sequences (\\, \n, \t, \uXXXX, \", etc.).
-     */
-    private suspend fun evalJsRaw(script: String): String = withContext(Dispatchers.Main) {
-        try {
-            withTimeout(config.jsEvaluationTimeoutMs) {
-                suspendCancellableCoroutine { cont ->
-                    val wv = webView
-                    if (wv == null) {
-                        cont.resume("")
-                        return@suspendCancellableCoroutine
-                    }
-                    wv.evaluateJavascript(script) { result ->
-                        when {
-                            result == null -> {
-                                logger.d("Controller", "JS returned null for: ${script.take(80)}")
-                                cont.resume("")
-                            }
-                            result == "null" -> cont.resume("")
-                            result == "undefined" -> cont.resume("")
-                            result.startsWith("\"") && result.endsWith("\"") && result.length >= 2 -> {
-                                // Result is a JSON-encoded string. Use JSONTokener for proper decoding.
-                                try {
-                                    val decoded = org.json.JSONTokener(result).nextValue() as String
-                                    cont.resume(decoded)
-                                } catch (e: Exception) {
-                                    // Fallback: manual unescape for critical characters
-                                    cont.resume(
-                                        result.substring(1, result.length - 1)
-                                            .replace("\\\\", "\\")
-                                            .replace("\\\"", "\"")
-                                            .replace("\\n", "\n")
-                                            .replace("\\t", "\t")
-                                            .replace("\\/", "/")
-                                    )
-                                }
-                            }
-                            else -> cont.resume(result)
-                        }
-                    }
-                }
-            }
-        } catch (e: TimeoutCancellationException) {
-            logger.w("Controller", "JS evaluation timed out: ${script.take(80)}")
-            ""
-        } catch (e: Exception) {
-            logger.e("Controller", "JS evaluation failed: ${script.take(80)}", e)
-            ""
-        }
-    }
+    // ─── JS Evaluation (delegated to JsEvaluator) ──────────────────
 
-    /**
-     * Evaluates JS and parses the result as a JSONObject.
-     * Returns null if the result is not valid JSON (null, empty, malformed).
-     */
-    private suspend fun evalJsJson(script: String): JSONObject? {
-        val raw = evalJsRaw(script)
-        if (raw.isBlank()) return null
-        return try {
-            JSONObject(raw)
-        } catch (e: Exception) {
-            logger.w("Controller", "Failed to parse JSON from JS: ${raw.take(100)}")
-            null
-        }
-    }
+    private suspend fun evalJsRaw(script: String): AgentResult<String> =
+        jsEvaluator.evalRaw(script)
 
-    /**
-     * Evaluates JS and returns the result as a boolean.
-     * Returns false on any failure.
-     */
-    private suspend fun evalJsBool(script: String): Boolean {
-        val raw = evalJsRaw(script)
-        return raw.equals("true", ignoreCase = true)
-    }
+    private suspend fun evalJsJson(script: String): JSONObject? =
+        jsEvaluator.evalJson(script)
 
-    /**
-     * Fire-and-forget JS evaluation. Ignores the result entirely.
-     */
-    private suspend fun evalJsVoid(script: String) {
-        evalJsRaw(script)
-    }
+    private suspend fun evalJsBool(script: String): Boolean =
+        jsEvaluator.evalBool(script)
+
+    private suspend fun evalJsVoid(script: String) =
+        jsEvaluator.evalVoid(script)
 
     // ─── State Capture ────────────────────────────────────────────────
 
     suspend fun captureState(): AgentResult<AgentState> = mutex.withLock {
         val wv = webView ?: return AgentResult.Error(AgentError.PageNotReady(PageLifecycleState.IDLE))
 
-        // Try to get the accessibility tree. If it fails, inject script and retry.
-        var treeObj = evalJsJson("__AgenticInternal.getAccessibilityTree(${config.maxDomElements})")
-        if (treeObj == null) {
-            // Await full script injection (suspends until JS engine confirms availability or returns error)
+        var fullCaptureObj = evalJsJson("__AgenticInternal.getFullCapture(${config.maxDomElements})")
+        if (fullCaptureObj == null) {
             val injectionError = wv.ensureEngineAvailable()
             if (injectionError.isNotEmpty()) {
                 return AgentResult.Error(AgentError.JsEvaluationFailed(injectionError))
             }
 
-            // Retry with backoff — the DOM may still be settling after injection
             var retryDelay = 100L
             for (attempt in 1..3) {
-                treeObj = evalJsJson("__AgenticInternal.getAccessibilityTree(${config.maxDomElements})")
-                if (treeObj != null) break
+                fullCaptureObj = evalJsJson("__AgenticInternal.getFullCapture(${config.maxDomElements})")
+                if (fullCaptureObj != null) break
                 if (attempt < 3) {
                     delay(retryDelay)
                     retryDelay *= 2
                 }
             }
-            if (treeObj == null) {
-                return AgentResult.Error(AgentError.JsEvaluationFailed("JS engine initialized successfully, but getAccessibilityTree returned null."))
+            if (fullCaptureObj == null) {
+                return AgentResult.Error(AgentError.JsEvaluationFailed("JS engine initialized, but getFullCapture returned null."))
             }
         }
 
         return try {
-
-            // Critical: viewport info
             val viewportObj = evalJsJson("__AgenticInternal.getViewportInfo()")
                 ?: return AgentResult.Error(AgentError.JsEvaluationFailed("Viewport info returned null"))
 
-            // Screenshot (optional, already handles failures internally)
-            val screenshot = if (config.screenshotEnabled) captureScreenshot() else null
+            val screenshot = if (config.screenshotEnabled) {
+                when (val result = captureScreenshot()) {
+                    is AgentResult.Success -> result.data
+                    is AgentResult.Error -> null
+                }
+            } else null
 
-            // Optional: selector map (graceful degradation)
-            val selectorMapObj = evalJsJson("__AgenticInternal.getSelectorMap()")
+            val treeArr = fullCaptureObj.optJSONArray("tree")
+            occludedMap.clear()
+            if (treeArr != null) {
+                for (i in 0 until treeArr.length()) {
+                    val node = treeArr.optJSONObject(i) ?: continue
+                    val id = node.optString("id", "")
+                    if (id.isNotEmpty()) {
+                        occludedMap[id] = node.optBoolean("occluded", false)
+                    }
+                }
+            }
+
+            val selectorMapObj = fullCaptureObj.optJSONObject("selectorMap")
             val selectorMap = mutableMapOf<String, String>()
             selectorMapObj?.keys()?.forEach { key ->
                 selectorMap[key] = selectorMapObj.optString(key, "")
             }
 
-            // Optional: compact tree (graceful degradation)
-            val compactTree = evalJsRaw("__AgenticInternal.getCompactTree(${config.maxDomElements})")
-                .ifBlank { null }
+            val compactTree = fullCaptureObj.optString("compactTree", "").ifBlank { null }
 
             AgentResult.Success(AgentState(
-                accessibilityTree = treeObj.optString("tree", "[]"),
+                accessibilityTree = fullCaptureObj.optString("tree", "[]"),
                 screenshotBase64 = screenshot,
                 viewportInfo = parseViewportInfo(viewportObj),
                 url = withContext(Dispatchers.Main) { wv.url } ?: "",
                 title = withContext(Dispatchers.Main) { wv.title } ?: "",
                 pageState = withContext(Dispatchers.Main) { wv.pageLifecycleState },
-                elementCount = treeObj.optJSONArray("tree")?.length() ?: 0,
-                truncated = treeObj.optBoolean("truncated", false),
+                elementCount = treeArr?.length() ?: 0,
+                truncated = fullCaptureObj.optBoolean("truncated", false),
                 selectorMap = selectorMap.ifEmpty { null },
                 compactTree = compactTree
             ))
@@ -291,18 +230,26 @@ class AgenticWebController(
             is AgentAction.SendKeys -> handleSendKeys(action.keys)
             is AgentAction.ScrollToPercent -> handleScrollToPercent(action.yPercent, action.agentId)
             is AgentAction.ScrollToText -> handleScrollToText(action.text, action.nth)
-            is AgentAction.ScrollToTop -> handleScrollToTop()
-            is AgentAction.ScrollToBottom -> handleScrollToBottom()
-            is AgentAction.PreviousPage -> handlePreviousPage()
-            is AgentAction.NextPage -> handleNextPage()
+            is AgentAction.ScrollToTop -> handleScrollToTop(action.agentId)
+            is AgentAction.ScrollToBottom -> handleScrollToBottom(action.agentId)
+            is AgentAction.PreviousPage -> handlePreviousPage(action.agentId)
+            is AgentAction.NextPage -> handleNextPage(action.agentId)
             is AgentAction.GetDropdownOptions -> handleGetDropdownOptions(action.agentId)
             is AgentAction.SelectDropdownOption -> handleSelectDropdownOption(action.agentId, action.text)
+            is AgentAction.Done -> AgentResult.Success(Unit)
         }
     }
 
     // ─── Action Handlers ──────────────────────────────────────────────
 
     private suspend fun handleClick(agentId: String): AgentResult<Unit> {
+        val isFile = evalJsBool("__AgenticInternal.isFileUploader('$agentId')")
+        if (isFile) return AgentResult.Error(AgentError.FileUploaderDetected(agentId))
+
+        if (occludedMap[agentId] == true) {
+            logger.w("Controller", "Element $agentId is occluded, proceeding with click anyway")
+        }
+
         val coords = getElementCoords(agentId) ?: return AgentResult.Error(AgentError.ElementNotFound(agentId))
         withContext(Dispatchers.Main) { dispatchTouch(coords.first, coords.second) }
         return AgentResult.Success(Unit)
@@ -315,6 +262,7 @@ class AgenticWebController(
     }
 
     private suspend fun handleInputText(agentId: String, text: String, clearFirst: Boolean): AgentResult<Unit> {
+        evalJsBool("__AgenticInternal.waitForStability('$agentId', ${config.elementStabilityTimeoutMs})")
         val coords = getElementCoords(agentId) ?: return AgentResult.Error(AgentError.ElementNotFound(agentId))
         withContext(Dispatchers.Main) { dispatchTouch(coords.first, coords.second) }
         delay(200)
@@ -351,37 +299,48 @@ class AgenticWebController(
         else AgentResult.Error(AgentError.ElementNotFound("text:$text"))
     }
 
-    private suspend fun handleScrollToTop(): AgentResult<Unit> {
-        evalJsVoid("__AgenticInternal.scrollToTop()")
+    private suspend fun handleScrollToTop(agentId: String?): AgentResult<Unit> {
+        val agentIdArg = if (agentId != null) "'$agentId'" else "undefined"
+        evalJsVoid("__AgenticInternal.scrollToTop($agentIdArg)")
         return AgentResult.Success(Unit)
     }
 
-    private suspend fun handleScrollToBottom(): AgentResult<Unit> {
-        evalJsVoid("__AgenticInternal.scrollToBottom()")
+    private suspend fun handleScrollToBottom(agentId: String?): AgentResult<Unit> {
+        val agentIdArg = if (agentId != null) "'$agentId'" else "undefined"
+        evalJsVoid("__AgenticInternal.scrollToBottom($agentIdArg)")
         return AgentResult.Success(Unit)
     }
 
-    private suspend fun handlePreviousPage(): AgentResult<Unit> {
-        evalJsVoid("__AgenticInternal.previousPage()")
+    private suspend fun handlePreviousPage(agentId: String?): AgentResult<Unit> {
+        val agentIdArg = if (agentId != null) "'$agentId'" else "undefined"
+        evalJsVoid("__AgenticInternal.previousPage($agentIdArg)")
         return AgentResult.Success(Unit)
     }
 
-    private suspend fun handleNextPage(): AgentResult<Unit> {
-        evalJsVoid("__AgenticInternal.nextPage()")
+    private suspend fun handleNextPage(agentId: String?): AgentResult<Unit> {
+        val agentIdArg = if (agentId != null) "'$agentId'" else "undefined"
+        evalJsVoid("__AgenticInternal.nextPage($agentIdArg)")
         return AgentResult.Success(Unit)
     }
 
     private suspend fun handleGetDropdownOptions(agentId: String): AgentResult<Unit> {
         val result = evalJsRaw("__AgenticInternal.getDropdownOptions('$agentId')")
-        lastDropdownOptions = result.ifBlank { "[]" }
+        val json = when (result) {
+            is AgentResult.Success -> result.data.ifBlank { "[]" }
+            is AgentResult.Error -> "[]"
+        }
+        lastDropdownOptions = json
         logger.d("Controller", "Dropdown options: $lastDropdownOptions")
         return AgentResult.Success(Unit)
     }
 
     suspend fun getDropdownOptions(agentId: String): AgentResult<List<DropdownOption>> = mutex.withLock {
         return try {
-            val json = evalJsRaw("__AgenticInternal.getDropdownOptions('$agentId')")
-            lastDropdownOptions = json.ifBlank { "[]" }
+            val json = when (val result = evalJsRaw("__AgenticInternal.getDropdownOptions('$agentId')")) {
+                is AgentResult.Success -> result.data.ifBlank { "[]" }
+                is AgentResult.Error -> "[]"
+            }
+            lastDropdownOptions = json
             val arr = JSONArray(lastDropdownOptions)
             val options = mutableListOf<DropdownOption>()
             for (i in 0 until arr.length()) {
@@ -420,14 +379,26 @@ class AgenticWebController(
         val wv = webView ?: return AgentResult.Error(AgentError.PageNotReady(PageLifecycleState.IDLE))
         withContext(Dispatchers.Main) { wv.loadUrl(url) }
 
-        return withTimeoutOrNull(config.pageSettleTimeoutMs) {
+        val settled = withTimeoutOrNull(config.pageSettleTimeoutMs) {
             while (true) {
                 val state = withContext(Dispatchers.Main) { wv.pageLifecycleState }
                 if (state == PageLifecycleState.COMPLETE) break
+                if (state == PageLifecycleState.ERROR) {
+                    val httpCode = withContext(Dispatchers.Main) { wv.lastNavigationHttpError }
+                    return@withTimeoutOrNull AgentResult.Error(AgentError.NavigationFailed(url, httpCode))
+                }
                 delay(100)
             }
             AgentResult.Success(Unit)
-        } ?: AgentResult.Error(AgentError.Timeout("Navigation", config.pageSettleTimeoutMs))
+        }
+        if (settled != null) return settled
+
+        val httpCode = withContext(Dispatchers.Main) { wv.lastNavigationHttpError }
+        return if (httpCode != null && httpCode >= 400) {
+            AgentResult.Error(AgentError.NavigationFailed(url, httpCode))
+        } else {
+            AgentResult.Error(AgentError.Timeout("Navigation", config.pageSettleTimeoutMs))
+        }
     }
 
     // ─── Element Coordinates ──────────────────────────────────────────
@@ -476,50 +447,10 @@ class AgenticWebController(
         wv.dispatchTouchEvent(upEvent)
     }
 
-    // ─── Screenshot ───────────────────────────────────────────────────
+    // ─── Screenshot (delegated to ScreenshotCapture) ────────────────
 
-    private suspend fun captureScreenshot(): String? {
-        val wv = webView ?: return null
-        if (wv.width <= 0 || wv.height <= 0) return null
-
-        val window = (wv.context as? Activity)?.window ?: return null
-        val bitmap = getReusableBitmap(wv.width, wv.height)
-
-        val locationInWindow = IntArray(2)
-        wv.getLocationInWindow(locationInWindow)
-        val sourceRect = Rect(
-            locationInWindow[0], locationInWindow[1],
-            locationInWindow[0] + wv.width, locationInWindow[1] + wv.height
-        )
-
-        return try {
-            val result = suspendCancellableCoroutine<Int> { cont ->
-                try {
-                    PixelCopy.request(window, sourceRect, bitmap, { cont.resume(it) }, pixelCopyHandler)
-                } catch (e: Exception) { cont.resume(-1) }
-            }
-            if (result == PixelCopy.SUCCESS) {
-                val outputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, config.screenshotQuality, outputStream)
-                Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
-            } else {
-                logger.e("Controller", "PixelCopy failed with code: $result")
-                null
-            }
-        } catch (e: Exception) {
-            logger.e("Controller", "Failed to capture screenshot", e)
-            null
-        }
-    }
-
-    private fun getReusableBitmap(width: Int, height: Int): Bitmap {
-        val current = cachedBitmap
-        if (current != null && current.width == width && current.height == height) return current
-        current?.recycle()
-        val newBitmap = createBitmap(width, height)
-        cachedBitmap = newBitmap
-        return newBitmap
-    }
+    private suspend fun captureScreenshot(): AgentResult<String> =
+        screenshotCapture.capture()
 
     // ─── Utilities ────────────────────────────────────────────────────
 
@@ -546,9 +477,7 @@ class AgenticWebController(
 
     fun destroy() {
         scope.cancel()
-        pixelCopyThread.quitSafely()
-        cachedBitmap?.recycle()
-        cachedBitmap = null
+        screenshotCapture.destroy()
         cancelAllPendingPromises("Controller destroyed")
     }
 

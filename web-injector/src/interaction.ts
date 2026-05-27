@@ -226,6 +226,13 @@ export class InteractionHandler {
         return document.scrollingElement || document.documentElement;
     }
 
+    public isFileUploader(el: Element): boolean {
+        if (el instanceof HTMLInputElement) {
+            return el.type === 'file' || el.hasAttribute('accept');
+        }
+        return false;
+    }
+
     public setupMutationObserver(callback: () => void, throttleMs: number = 300): MutationObserver {
         let timeout: any = null;
         const observer = new MutationObserver(() => {

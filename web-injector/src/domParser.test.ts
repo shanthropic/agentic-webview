@@ -144,4 +144,72 @@ describe('domParser', () => {
         expect(tree).toEqual([]);
         expect(truncated).toBe(false);
     });
+
+    it('should include cssSelector in nodes', () => {
+        document.body.innerHTML = `
+            <button id="btn" data-testid="submit">Click</button>
+        `;
+
+        const { tree } = parser.getAccessibilityTree();
+        expect(tree.length).toBeGreaterThan(0);
+        expect(typeof tree[0].cssSelector).toBe('string');
+        expect(tree[0].cssSelector.length).toBeGreaterThan(0);
+    });
+
+    it('should mark elements as new on first capture', () => {
+        document.body.innerHTML = `
+            <button id="btn">Click</button>
+        `;
+
+        const { tree } = parser.getAccessibilityTree();
+        expect(tree.length).toBeGreaterThan(0);
+        expect(tree[0].isNew).toBe(true);
+    });
+
+    it('should mark elements as not new on second capture without changes', () => {
+        document.body.innerHTML = `
+            <button id="btn">Click</button>
+        `;
+
+        parser.getAccessibilityTree();
+        const { tree } = parser.getAccessibilityTree();
+        expect(tree.length).toBeGreaterThan(0);
+        expect(tree[0].isNew).toBe(false);
+    });
+
+    it('should include depth field in nodes', () => {
+        document.body.innerHTML = `
+            <div>
+                <button id="btn">Click</button>
+            </div>
+        `;
+
+        const { tree } = parser.getAccessibilityTree();
+        expect(tree.length).toBeGreaterThan(0);
+        expect(typeof tree[0].depth).toBe('number');
+        expect(tree[0].depth).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return maxNodeId and maxHighlightIndex', () => {
+        document.body.innerHTML = `
+            <button id="btn">Click</button>
+        `;
+
+        const result = parser.getAccessibilityTree();
+        expect(typeof result.maxNodeId).toBe('number');
+        expect(typeof result.maxHighlightIndex).toBe('number');
+        expect(result.maxNodeId).toBeGreaterThan(0);
+        expect(result.maxHighlightIndex).toBeGreaterThan(0);
+    });
+
+    it('should collect text from deeply nested non-interactive elements', () => {
+        document.body.innerHTML = `
+            <button id="btn"><span><em>Deep Text</em></span></button>
+        `;
+
+        const { tree } = parser.getAccessibilityTree();
+        const btn = tree.find(n => n.tag === 'BUTTON');
+        expect(btn).toBeDefined();
+        expect(btn!.text).toContain('Deep Text');
+    });
 });

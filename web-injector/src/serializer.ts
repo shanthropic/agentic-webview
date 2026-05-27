@@ -15,14 +15,22 @@ export function serializeTreeToText(
     nodes: AccessibilityNode[],
     includeAttributes: string[] | null = null,
     previousHighlightIndices?: Set<number>,
+    scrollInfo?: { scrollY: number; scrollHeight: number; viewportHeight: number },
+    hierarchical: boolean = false,
 ): string {
     if (!includeAttributes) includeAttributes = DEFAULT_INCLUDE_ATTRIBUTES;
     const lines: string[] = [];
 
+    if (scrollInfo) {
+        const maxScroll = Math.max(1, scrollInfo.scrollHeight - scrollInfo.viewportHeight);
+        const pct = Math.round((scrollInfo.scrollY / maxScroll) * 100);
+        lines.push(`[Scroll info] scrollY: ${scrollInfo.scrollY}, scrollHeight: ${scrollInfo.scrollHeight}, viewportHeight: ${scrollInfo.viewportHeight}, scrollPercent: ${pct}%`);
+    }
+
     for (const node of nodes) {
         if (node.highlightIndex === null || node.highlightIndex === undefined) continue;
 
-        const depthStr = '\t'.repeat(0); // flat for now
+        const depthStr = hierarchical ? '\t'.repeat(node.depth ?? 0) : '';
         const text = node.text || '';
 
         let attributesHtmlStr: string | null = null;

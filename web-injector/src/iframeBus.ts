@@ -4,6 +4,8 @@ interface IframeTreeMessage {
     type: '__agentic_iframe_tree';
     url: string;
     tree: string; // JSON-stringified AccessibilityNode[]
+    maxNodeId?: number;
+    maxHighlightIndex?: number;
 }
 
 export class IframeMessageBus {
@@ -54,11 +56,13 @@ export class IframeMessageBus {
 
     private sendTreeToParent(): void {
         try {
-            const { tree } = this.parser.getAccessibilityTree();
+            const result = this.parser.getAccessibilityTree();
             const msg: IframeTreeMessage = {
                 type: '__agentic_iframe_tree',
                 url: location.href,
-                tree: JSON.stringify(tree),
+                tree: JSON.stringify(result.tree),
+                maxNodeId: result.maxNodeId,
+                maxHighlightIndex: result.maxHighlightIndex,
             };
             window.parent.postMessage(msg, '*');
         } catch {

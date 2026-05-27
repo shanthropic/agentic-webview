@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.util.AttributeSet
 import android.webkit.*
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
@@ -34,6 +35,10 @@ class AgenticWebView @JvmOverloads constructor(
     @Volatile
     var isScriptInjected: Boolean = false
         private set
+
+    @Volatile
+    var lastNavigationHttpError: Int? = null
+        internal set
 
     var listener: AgenticWebViewListener? = null
 
@@ -75,8 +80,18 @@ class AgenticWebView @JvmOverloads constructor(
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 currentSessionToken = java.util.UUID.randomUUID().toString()
                 isScriptInjected = false
+                lastNavigationHttpError = null
                 pageLifecycleState = PageLifecycleState.LOADING
                 listener?.onStateChanged(pageLifecycleState)
+
+                if (config.enableAntiDetection) {
+                    view?.evaluateJavascript("""
+                        (function() {
+                            try { Object.defineProperty(navigator, 'webdriver', { get: function() { return undefined; } }); } catch(e) {}
+                            try { window.chrome = { runtime: {} }; } catch(e) {}
+                        })();
+                    """.trimIndent(), null)
+                }
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -92,6 +107,14 @@ class AgenticWebView @JvmOverloads constructor(
                     logger.w("WebView", "Blocking non-http(s) URL: $url")
                     return true
                 }
+                config.deniedHosts?.let { denied ->
+                    val host = url.host ?: return@let
+                    if (denied.any { host.endsWith(it) }) {
+                        logger.w("WebView", "Blocking denied host: $host")
+                        config.homeUrl?.let { view?.loadUrl(it) }
+                        return true
+                    }
+                }
                 config.allowedHosts?.let { hosts ->
                     if (url.host !in hosts) {
                         logger.w("WebView", "Blocking unauthorized host: ${url.host}")
@@ -105,6 +128,12 @@ class AgenticWebView @JvmOverloads constructor(
                 if (request?.isForMainFrame == true) {
                     pageLifecycleState = PageLifecycleState.ERROR
                     listener?.onStateChanged(pageLifecycleState)
+                }
+            }
+
+            override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                if (request?.isForMainFrame == true) {
+                    lastNavigationHttpError = errorResponse?.statusCode
                 }
             }
 
@@ -123,6 +152,22 @@ class AgenticWebView @JvmOverloads constructor(
         webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 listener?.onProgressChanged(newProgress)
+            }
+
+            override fun onCreateWindow(
+                view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?
+            ): Boolean {
+                val transport = resultMsg?.obj as? WebView.WebViewTransport ?: return false
+                val newWebView = WebView(context)
+                newWebView.webViewClient = object : WebViewClient() {
+                    override fun onPageStarted(v: WebView?, url: String?, favicon: Bitmap?) {
+                        url?.let { listener?.onNewTabRequested(it) }
+                        newWebView.destroy()
+                    }
+                }
+                transport.webView = newWebView
+                resultMsg.sendToTarget()
+                return true
             }
 
             override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
@@ -206,6 +251,7 @@ class AgenticWebView @JvmOverloads constructor(
 
                 if (unquotedResult == "SUCCESS") {
                     isScriptInjected = true
+                    forwardConfigToEngine()
                     cont.resume("")
                 } else {
                     val errorMsg = "Injection failed: $unquotedResult"
@@ -219,6 +265,22 @@ class AgenticWebView @JvmOverloads constructor(
     fun updatePageState(state: PageLifecycleState) {
         pageLifecycleState = state
         listener?.onStateChanged(state)
+    }
+
+    private fun forwardConfigToEngine() {
+        val configJson = buildString {
+            append("{")
+            append("\"viewportExpansion\":${config.viewportExpansion},")
+            append("\"domMutationThrottleMs\":${config.domMutationThrottleMs},")
+            append("\"enableAntiDetection\":${config.enableAntiDetection}")
+            config.includeAttributes?.let { attrs ->
+                append(",\"includeAttributes\":[")
+                append(attrs.joinToString(",") { "\"$it\"" })
+                append("]")
+            }
+            append("}")
+        }
+        evaluateJavascript("window.__AgenticInternal && window.__AgenticInternal.configure('$configJson')", null)
     }
 
     inner class JsBridge {
@@ -262,5 +324,6 @@ class AgenticWebView @JvmOverloads constructor(
         fun onDomMutated(json: String)
         fun onPromiseResolved(promiseId: String, result: String)
         fun onCrash(didRecover: Boolean)
+        fun onNewTabRequested(url: String) {}
     }
 }

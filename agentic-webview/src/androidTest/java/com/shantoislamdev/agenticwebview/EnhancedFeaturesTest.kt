@@ -94,7 +94,7 @@ class EnhancedFeaturesTest {
         val controller = createController()
         navigateAndLoad(controller, html)
 
-        val result = controller.executeAction(AgentAction.ScrollToTop)
+        val result = controller.executeAction(AgentAction.ScrollToTop())
         assertTrue("ScrollToTop should succeed", result is AgentResult.Success)
     }
 
@@ -110,7 +110,7 @@ class EnhancedFeaturesTest {
         val controller = createController()
         navigateAndLoad(controller, html)
 
-        val result = controller.executeAction(AgentAction.ScrollToBottom)
+        val result = controller.executeAction(AgentAction.ScrollToBottom())
         assertTrue("ScrollToBottom should succeed", result is AgentResult.Success)
     }
 
@@ -159,7 +159,7 @@ class EnhancedFeaturesTest {
         val controller = createController()
         navigateAndLoad(controller, html)
 
-        val result = controller.executeAction(AgentAction.PreviousPage)
+        val result = controller.executeAction(AgentAction.PreviousPage())
         assertTrue("PreviousPage should succeed", result is AgentResult.Success)
     }
 
@@ -175,7 +175,7 @@ class EnhancedFeaturesTest {
         val controller = createController()
         navigateAndLoad(controller, html)
 
-        val result = controller.executeAction(AgentAction.NextPage)
+        val result = controller.executeAction(AgentAction.NextPage())
         assertTrue("NextPage should succeed", result is AgentResult.Success)
     }
 
@@ -257,11 +257,44 @@ class EnhancedFeaturesTest {
             .setElementStabilityTimeoutMs(1500)
             .setEnableAntiDetection(false)
             .setIncludeAttributes(listOf("id", "class"))
+            .setDeniedHosts(setOf("evil.com"))
+            .setHomeUrl("https://safe.com")
             .build()
 
         assertEquals(200, config.viewportExpansion)
         assertEquals(1500L, config.elementStabilityTimeoutMs)
         assertFalse(config.enableAntiDetection)
         assertEquals(listOf("id", "class"), config.includeAttributes)
+        assertEquals(setOf("evil.com"), config.deniedHosts)
+        assertEquals("https://safe.com", config.homeUrl)
+    }
+
+    @Test
+    fun testScrollToTopWithAgentId() = runBlocking {
+        val html = """
+            <!DOCTYPE html>
+            <html><body>
+                <div style="height:3000px"><button id="btn">Bottom</button></div>
+            </body></html>
+        """.trimIndent()
+
+        val controller = createController()
+        navigateAndLoad(controller, html)
+
+        val result = controller.executeAction(AgentAction.ScrollToTop(agentId = null))
+        assertTrue("ScrollToTop with null agentId should succeed", result is AgentResult.Success)
+    }
+
+    @Test
+    fun testDoneAction() = runBlocking {
+        val controller = createController()
+        val result = controller.executeAction(AgentAction.Done("Task complete", true))
+        assertTrue("Done action should succeed", result is AgentResult.Success)
+    }
+
+    @Test
+    fun testDeniedHostsConfig() {
+        val config = AgenticWebViewConfig(deniedHosts = setOf("ads.com", "tracker.io"))
+        assertEquals(setOf("ads.com", "tracker.io"), config.deniedHosts)
     }
 }
