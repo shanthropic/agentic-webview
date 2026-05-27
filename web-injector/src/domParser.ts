@@ -1,3 +1,5 @@
+import { BuildDomTreeEngine, DomNodeData, BuildDomTreeResult } from './buildDomTree';
+
 export interface ElementBounds {
     left: number;
     top: number;
@@ -14,180 +16,167 @@ export interface AccessibilityNode {
     attributes: { [key: string]: string };
     occluded: boolean;
     inIframe: boolean;
+    xpath: string;
+    isTopElement: boolean;
+    isInteractive: boolean;
+    highlightIndex: number | null;
+}
+
+export interface AccessibilityTreeResult {
+    tree: AccessibilityNode[];
+    truncated: boolean;
+    selectorMap: Record<number, string>;
 }
 
 export class DomParser {
     private elementMap = new Map<string, Element>();
-    private nextId = 1;
+    private engine: BuildDomTreeEngine;
+    private viewportExpansion: number;
+    private subframeTrees: Map<string, AccessibilityNode[]> = new Map();
 
-    public getAccessibilityTree(maxElements: number = 500): { tree: AccessibilityNode[], truncated: boolean } {
+    constructor(viewportExpansion: number = 0) {
+        this.viewportExpansion = viewportExpansion;
+        this.engine = new BuildDomTreeEngine(this.viewportExpansion, this.elementMap);
+    }
+
+    public getAccessibilityTree(maxElements: number = 500): AccessibilityTreeResult {
+        this.elementMap.clear();
+        this.engine = new BuildDomTreeEngine(this.viewportExpansion, this.elementMap);
+
+        const result = this.engine.build();
         const nodes: AccessibilityNode[] = [];
-        let truncated = false;
+        const selectorMap: Record<number, string> = {};
 
-        try {
-            const traverse = (root: ParentNode, inIframe: boolean = false) => {
-                if (nodes.length >= maxElements) {
-                    truncated = true;
-                    return;
-                }
+        this.processNodeMap(result.map, result.rootId, nodes, selectorMap, false, maxElements);
 
-                const children = Array.from(root.children);
-                for (const child of children) {
-                    if (nodes.length >= maxElements) {
-                        truncated = true;
-                        return;
-                    }
-
-                    if (this.isInteractive(child)) {
-                        nodes.push(this.serializeNode(child, inIframe));
-                    }
-
-                    if (child.shadowRoot) {
-                        traverse(child.shadowRoot, inIframe);
-                    }
-
-                    if (child.tagName === 'IFRAME') {
-                        try {
-                            const iframe = child as HTMLIFrameElement;
-                            if (iframe.contentDocument) {
-                                traverse(iframe.contentDocument, true);
-                            }
-                        } catch (e) {
-                            console.warn('Cannot access cross-origin iframe');
-                        }
-                    } else {
-                        traverse(child, inIframe);
-                    }
-                }
-            };
-
-            traverse(document.body);
-            this.pruneElementMap();
-        } catch (e: any) {
-            console.error('Error during accessibility tree extraction', e);
-            if (window.AgenticBridge) {
-                try {
-                    // Note: This expects a session token which might not be available here directly
-                    // but we fix the signature mismatch for compilation.
-                    (window.AgenticBridge as any).onError("system", JSON.stringify({
-                        error: e.message || 'Tree walk failure',
-                        stack: e.stack || ''
-                    }));
-                } catch (bridgeErr) {
-                    // Fallback
+        // Merge subframe trees
+        for (const [url, subframeNodes] of this.subframeTrees) {
+            for (const node of subframeNodes) {
+                if (nodes.length >= maxElements) break;
+                node.inIframe = true;
+                nodes.push(node);
+                if (node.highlightIndex !== null && node.highlightIndex !== undefined) {
+                    selectorMap[node.highlightIndex] = node.id;
                 }
             }
         }
-        return { tree: nodes, truncated };
+
+        this.pruneElementMap();
+
+        return {
+            tree: nodes,
+            truncated: nodes.length >= maxElements,
+            selectorMap,
+        };
+    }
+
+    private processNodeMap(
+        map: Record<string, DomNodeData>,
+        nodeId: string,
+        nodes: AccessibilityNode[],
+        selectorMap: Record<number, string>,
+        inIframe: boolean,
+        maxElements: number,
+    ): void {
+        if (nodes.length >= maxElements) return;
+
+        const nodeData = map[nodeId];
+        if (!nodeData) return;
+
+        // Process element nodes
+        if (nodeData.tagName && nodeData.type !== 'TEXT_NODE') {
+            // Include interactive elements (ones with highlightIndex)
+            if (nodeData.highlightIndex !== undefined && nodeData.highlightIndex !== null) {
+                const agentId = nodeData.highlightIndex.toString();
+                const el = this.elementMap.get(agentId);
+
+                const node: AccessibilityNode = {
+                    id: agentId,
+                    tag: nodeData.tagName.toUpperCase(),
+                    text: this.extractText(nodeData, map),
+                    role: nodeData.attributes['role'] || '',
+                    bounds: el ? this.getBounds(el) : { left: 0, top: 0, width: 0, height: 0 },
+                    attributes: nodeData.attributes,
+                    occluded: el ? !nodeData.isTopElement! : false,
+                    inIframe,
+                    xpath: nodeData.xpath,
+                    isTopElement: nodeData.isTopElement || false,
+                    isInteractive: nodeData.isInteractive || false,
+                    highlightIndex: nodeData.highlightIndex,
+                };
+
+                nodes.push(node);
+                selectorMap[nodeData.highlightIndex] = agentId;
+            }
+            // Also include visible, top-element nodes without highlightIndex
+            // (for backward compatibility and non-interactive element visibility)
+            else if (
+                nodeData.isVisible &&
+                nodeData.isTopElement &&
+                !nodeData.isInteractive &&
+                nodeData.children.length > 0
+            ) {
+                // Don't add to nodes list, but recurse into children
+            }
+
+            // Recurse into children
+            for (const childId of nodeData.children) {
+                this.processNodeMap(map, childId, nodes, selectorMap, inIframe, maxElements);
+            }
+        }
+    }
+
+    private extractText(nodeData: DomNodeData, map: Record<string, DomNodeData>): string {
+        // Collect text from direct text-node children
+        const textParts: string[] = [];
+        for (const childId of nodeData.children) {
+            const child = map[childId];
+            if (child && child.type === 'TEXT_NODE' && child.text && child.isVisible) {
+                textParts.push(child.text);
+            }
+        }
+        if (textParts.length > 0) return textParts.join(' ').trim();
+
+        // Fallback to attributes
+        return nodeData.attributes['aria-label'] ||
+            nodeData.attributes['placeholder'] ||
+            nodeData.attributes['title'] ||
+            nodeData.attributes['value'] ||
+            '';
+    }
+
+    private getBounds(el: Element): ElementBounds {
+        const rect = el.getBoundingClientRect();
+        return {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+        };
     }
 
     public getElementById(id: string): Element | undefined {
         return this.elementMap.get(id);
     }
 
-    private isInteractive(el: Element): boolean {
-        if (!(el instanceof HTMLElement)) return false;
-
-        const style = window.getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) {
-            return false;
+    public getSelectorMap(): Map<number, string> {
+        const result = new Map<number, string>();
+        for (const [agentId, _] of this.elementMap) {
+            const numId = parseInt(agentId, 10);
+            if (!isNaN(numId)) result.set(numId, agentId);
         }
-
-        if (el.offsetWidth === 0 && el.offsetHeight === 0) {
-            return false;
-        }
-
-        const interactiveTags = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'SUMMARY', 'DETAILS'];
-        if (interactiveTags.includes(el.tagName)) return true;
-
-        if (el.hasAttribute('onclick') || el.hasAttribute('role') || el.getAttribute('contenteditable') === 'true') {
-            return true;
-        }
-
-        const role = el.getAttribute('role');
-        const interactiveRoles = ['button', 'link', 'checkbox', 'menuitem', 'option', 'radio', 'switch', 'tab', 'textbox'];
-        if (role && interactiveRoles.includes(role.toLowerCase())) return true;
-
-        if (style.cursor === 'pointer') return true;
-
-        // TabIndex focusability rule (excluding body & html tags)
-        if (el.tabIndex >= 0 && el.tagName !== 'BODY' && el.tagName !== 'HTML') return true;
-
-        return false;
+        return result;
     }
 
-    private serializeNode(el: Element, inIframe: boolean): AccessibilityNode {
-        let id = el.getAttribute('data-agent-id');
-        if (!id || !this.elementMap.has(id)) {
-            id = (this.nextId++).toString();
-            el.setAttribute('data-agent-id', id);
-            this.elementMap.set(id, el);
-        }
-
-        const rect = el.getBoundingClientRect();
-        const attributes: { [key: string]: string } = {};
-        for (const attr of Array.from(el.attributes)) {
-            attributes[attr.name] = attr.value;
-        }
-
-        return {
-            id,
-            tag: el.tagName,
-            text: (el as HTMLElement).innerText?.trim() || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '',
-            role: el.getAttribute('role') || '',
-            bounds: {
-                left: rect.left,
-                top: rect.top,
-                width: rect.width,
-                height: rect.height
-            },
-            attributes,
-            occluded: this.isOccluded(el, rect),
-            inIframe
-        };
+    public mergeSubframeTree(url: string, nodes: AccessibilityNode[]): void {
+        this.subframeTrees.set(url, nodes);
     }
 
-    private pruneElementMap() {
+    private pruneElementMap(): void {
         for (const [id, el] of this.elementMap.entries()) {
-            if (!document.body.contains(el)) {
+            if (!document.body.contains(el) && !el.isConnected) {
                 this.elementMap.delete(id);
             }
         }
-    }
-
-    private isOccluded(el: Element, rect: DOMRect): boolean {
-        if (rect.width === 0 || rect.height === 0) return false;
-
-        // Calculate small corner offsets
-        const insetX = Math.min(rect.width * 0.1, 5);
-        const insetY = Math.min(rect.height * 0.1, 5);
-
-        // 5-point layout layout layout layout
-        const points = [
-            { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }, // Center
-            { x: rect.left + insetX, y: rect.top + insetY },                // Top-Left
-            { x: rect.right - insetX, y: rect.top + insetY },               // Top-Right
-            { x: rect.left + insetX, y: rect.bottom - insetY },             // Bottom-Left
-            { x: rect.right - insetX, y: rect.bottom - insetY }             // Bottom-Right
-        ];
-
-        let hitCount = 0;
-        let testedPoints = 0;
-
-        for (const pt of points) {
-            // Ignore points outside the viewport
-            if (pt.x < 0 || pt.y < 0 || pt.x > window.innerWidth || pt.y > window.innerHeight) {
-                continue;
-            }
-
-            testedPoints++;
-            const hitElement = document.elementFromPoint(pt.x, pt.y);
-            if (!hitElement || el.contains(hitElement) || hitElement.contains(el)) {
-                hitCount++;
-            }
-        }
-
-        // If we tested points and none hit our target or its nested contents, it's occluded.
-        return testedPoints > 0 && hitCount === 0;
     }
 }

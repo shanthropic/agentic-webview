@@ -4,12 +4,14 @@
 - **Description**: Agentic WebView SDK - An Android library providing an accessibility-tree-based perception layer and native interaction pipeline for LLM-powered web agents.
 - **Primary Stack**: Kotlin (Android SDK), TypeScript (DOM Injection), Gradle, npm, esbuild.
 - **Package Manager**: Use `./gradlew` for Android/Kotlin and `npm` for the `web-injector` module.
+- **Bridge Version**: 2 (version mismatch triggers automatic re-injection)
 
 ## Essential Commands
 - **Build Full Project**: `./gradlew assembleDebug`
 - **Build Web Injector**: `cd web-injector && npm run build` (Generates `dist/agentic_core.min.js`)
 - **Run Instrumented Tests**: `./gradlew :agentic-webview:connectedAndroidTest`
 - **Lint Android**: `./gradlew lint`
+- **Run TS Tests**: `cd web-injector && npm test`
 
 ## Project Structure
 - `agentic-webview/`: Core Android library.
@@ -17,8 +19,68 @@
   - `src/main/assets/`: Contains the bundled `agentic_core.min.js` (do not edit directly).
   - `src/androidTest/`: Comprehensive test suite using MockWebServer.
 - `web-injector/`: TypeScript project for in-page DOM parsing and interaction.
-  - `src/domParser.ts`: Accessibility tree generation logic.
-  - `src/interaction.ts`: Framework-safe input simulation and coordinate math.
+  - `src/buildDomTree.ts`: Core DOM tree engine. WeakMap caching, cursor-based interactive detection, isTopElement, XPath generation, shadow DOM traversal.
+  - `src/domParser.ts`: Wrapper around BuildDomTreeEngine. Produces `AccessibilityNode[]` with highlightIndex, xpath, isTopElement, isInteractive.
+  - `src/serializer.ts`: LLM-optimized `[index]<tag attrs>text />` compact text format with token dedup.
+  - `src/cssSelector.ts`: `enhancedCssSelectorForElement()` — XPath-to-CSS + class names + safe attributes.
+  - `src/elementHash.ts`: SHA-256 element identity for cross-mutation element matching.
+  - `src/stability.ts`: Element position stability polling (getBoundingClientRect until delta < 2px).
+  - `src/iframeBus.ts`: `postMessage` relay between subframes and main frame.
+  - `src/interaction.ts`: Framework-safe input simulation, sendKeys, scroll variants, dropdown handling.
+  - `src/bridge.ts`: JS-to-Kotlin bridge (`@JavascriptInterface` wrapper).
+
+## AgentAction Types
+
+### Original
+- `Click(agentId)`, `LongPress(agentId, durationMs)`, `InputText(agentId, text, clearFirst)`
+- `SelectOption(agentId, value)`, `Scroll(direction, amount)`, `Navigate(url)`
+- `GoBack`, `GoForward`, `Refresh`, `Wait(durationMs)`
+
+### New (v2)
+- `SendKeys(keys)` — Keyboard shortcuts (e.g., `"Control+A"`, `"Enter"`)
+- `ScrollToPercent(yPercent, agentId?)` — Scroll to percentage position
+- `ScrollToText(text, nth)` — Find visible text and scroll to it
+- `ScrollToTop`, `ScrollToBottom` — Scroll to extremes
+- `PreviousPage`, `NextPage` — Scroll by viewport height
+- `GetDropdownOptions(agentId)` — Enumerate `<select>` options (result stored in `lastDropdownOptions`)
+- `SelectDropdownOption(agentId, text)` — Select option by matching text
+
+## Public API (AgenticWebController)
+
+### State Capture
+- `captureState(): AgentResult<AgentState>` — Returns accessibility tree, screenshot, viewport, selectorMap, compactTree
+- `state: StateFlow<AgentState?>` — Reactive state updates
+- `getDropdownOptions(agentId): AgentResult<List<DropdownOption>>` — Typed dropdown enumeration
+
+### Action Execution
+- `executeAction(action: AgentAction): AgentResult<Unit>` — Execute any action with retry logic
+- `lastDropdownOptions: String?` — Raw JSON from last GetDropdownOptions call
+
+## AgentState Fields
+- `accessibilityTree: String` — JSON array of `AccessibilityNode`
+- `screenshotBase64: String?` — JPEG screenshot
+- `viewportInfo: ViewportInfo` — DPR, scale, scroll, dimensions
+- `url: String`, `title: String`, `pageState: PageLifecycleState`
+- `elementCount: Int`, `truncated: Boolean`
+- `selectorMap: Map<String, String>?` — highlightIndex → agentId mapping (NEW)
+- `compactTree: String?` — LLM-optimized text format (NEW)
+
+## AccessibilityNode Fields
+- `id`, `tag`, `text`, `role`, `bounds`, `attributes`, `occluded`, `inIframe`
+- `xpath: String` — Relative XPath from nearest boundary (NEW)
+- `isTopElement: Boolean` — Topmost at position via elementFromPoint (NEW)
+- `isInteractive: Boolean` — Cursor/tag/role-based detection (NEW)
+- `highlightIndex: Int?` — LLM reference index (NEW)
+
+## Config Options (AgenticWebViewConfig)
+- `jsEvaluationTimeoutMs`, `pageSettleTimeoutMs`, `pageSettleDebounceMs`
+- `screenshotEnabled`, `screenshotQuality`, `screenshotMaxDimension`
+- `maxDomElements`, `domMutationThrottleMs`, `actionRetryCount`
+- `enableDebugLogging`, `userAgent`, `allowedHosts`
+- `viewportExpansion: Int` — px to expand viewport; -1 = all visible (NEW)
+- `elementStabilityTimeoutMs: Long` — Wait for element stability (NEW)
+- `enableAntiDetection: Boolean` — Hide webdriver, force open shadow DOM (NEW)
+- `includeAttributes: List<String>?` — Attributes for serializer (NEW)
 
 ## Coding Standards
 - **Thread Safety**: All `AgenticWebController` operations must be serialized via the internal `Mutex`.

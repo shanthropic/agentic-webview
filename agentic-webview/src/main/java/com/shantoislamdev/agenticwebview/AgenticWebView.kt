@@ -3,7 +3,6 @@ package com.shantoislamdev.agenticwebview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -11,6 +10,10 @@ import android.webkit.*
 import com.shantoislamdev.agenticwebview.config.AgenticWebViewConfig
 import com.shantoislamdev.agenticwebview.internal.SdkLogger
 import com.shantoislamdev.agenticwebview.models.PageLifecycleState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
 
 @SuppressLint("SetJavaScriptEnabled")
 class AgenticWebView @JvmOverloads constructor(
@@ -28,15 +31,16 @@ class AgenticWebView @JvmOverloads constructor(
     @Volatile
     private var currentSessionToken: String = ""
 
+    @Volatile
+    var isScriptInjected: Boolean = false
+        private set
+
     var listener: AgenticWebViewListener? = null
 
     companion object {
-        const val BRIDGE_VERSION = 1
         private var isDataDirSet = false
 
-        fun init() {
-            // Placeholder for library initialization
-        }
+        fun init() {}
 
         fun getVersion(): String = "0.1.0"
     }
@@ -70,13 +74,13 @@ class AgenticWebView @JvmOverloads constructor(
         webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 currentSessionToken = java.util.UUID.randomUUID().toString()
+                isScriptInjected = false
                 pageLifecycleState = PageLifecycleState.LOADING
                 listener?.onStateChanged(pageLifecycleState)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                injectScript()
-                // Initial settlement - will be refined in controller
+                // Do NOT blindly inject script here. We use JIT injection in ensureEngineAvailable.
                 pageLifecycleState = PageLifecycleState.INTERACTIVE
                 listener?.onStateChanged(pageLifecycleState)
             }
@@ -106,15 +110,13 @@ class AgenticWebView @JvmOverloads constructor(
 
             override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
                 pageLifecycleState = PageLifecycleState.CRASHED
+                isScriptInjected = false
                 listener?.onStateChanged(pageLifecycleState)
                 logger.e("WebView", "Renderer process gone. Did crash: ${detail?.didCrash()}")
-                
                 if (detail?.didCrash() == true) {
                     listener?.onCrash(didRecover = true)
-                    // In a real implementation, the host app might need to recreate the view.
-                    // For now, we signal the crash and rely on the controller/host to handle it.
                 }
-                return true // Prevent app crash
+                return true
             }
         }
 
@@ -143,17 +145,75 @@ class AgenticWebView @JvmOverloads constructor(
         }
     }
 
-    private fun injectScript() {
+    /**
+     * Just-In-Time (JIT) script injection that guarantees the engine is available.
+     * Uses a robust try-catch wrapper to report exact execution errors.
+     * Returns an empty string on success, or an error message on failure.
+     */
+    suspend fun ensureEngineAvailable(): String = withContext(Dispatchers.Main) {
+        if (isScriptInjected) {
+            // Verify the global is still accessible (page may have navigated)
+            val verified = suspendCancellableCoroutine { cont ->
+                evaluateJavascript("typeof window.__AgenticInternal !== 'undefined'") { result ->
+                    cont.resume(result == "true")
+                }
+            }
+            if (verified) return@withContext ""
+            // Global gone — re-inject
+            isScriptInjected = false
+        }
+
         if (scriptCache == null) {
             try {
                 scriptCache = context.assets.open("agentic_core.min.js").bufferedReader().use { it.readText() }
             } catch (e: Exception) {
-                logger.e("WebView", "Failed to load script from assets", e)
-                return
+                val errorMsg = "Failed to load script from assets: ${e.message}"
+                logger.e("WebView", errorMsg, e)
+                return@withContext errorMsg
             }
         }
-        evaluateJavascript(scriptCache!!, null)
-        evaluateJavascript("__AgenticInternal.setSessionToken('$currentSessionToken')", null)
+
+        val wrappedScript = """
+            (function() {
+                try {
+                    if (typeof window.__AgenticInternal !== 'undefined') {
+                        return 'SUCCESS';
+                    }
+                    ${scriptCache}
+                    
+                    if (typeof window.__AgenticInternal !== 'undefined') {
+                        window.__AgenticInternal.setSessionToken('$currentSessionToken');
+                        return 'SUCCESS';
+                    } else {
+                        return 'ERROR: Script executed but window.__AgenticInternal is still undefined.';
+                    }
+                } catch (e) {
+                    return 'ERROR: ' + e.message + '\n' + e.stack;
+                }
+            })();
+        """.trimIndent()
+
+        suspendCancellableCoroutine { cont ->
+            evaluateJavascript(wrappedScript) { result ->
+                // The result is a JSON string, so "SUCCESS" becomes "\"SUCCESS\""
+                val unquotedResult = if (result != null && result.startsWith("\"") && result.endsWith("\"")) {
+                    result.substring(1, result.length - 1)
+                        .replace("\\\"", "\"")
+                        .replace("\\n", "\n")
+                } else {
+                    result ?: "ERROR: evaluateJavascript returned null"
+                }
+
+                if (unquotedResult == "SUCCESS") {
+                    isScriptInjected = true
+                    cont.resume("")
+                } else {
+                    val errorMsg = "Injection failed: $unquotedResult"
+                    logger.e("WebView", errorMsg)
+                    cont.resume(errorMsg)
+                }
+            }
+        }
     }
 
     fun updatePageState(state: PageLifecycleState) {
@@ -165,14 +225,9 @@ class AgenticWebView @JvmOverloads constructor(
         private val mainHandler = Handler(Looper.getMainLooper())
 
         @JavascriptInterface
-        fun onDomUpdate(token: String, version: Int, json: String) {
+        fun onDomUpdate(token: String, json: String) {
             if (token != currentSessionToken) {
                 logger.w("Bridge", "Security alert: Unauthorized token in onDomUpdate")
-                return
-            }
-            if (version != BRIDGE_VERSION) {
-                logger.w("Bridge", "Version mismatch: Expected $BRIDGE_VERSION, got $version. Re-injecting.")
-                mainHandler.post { injectScript() }
                 return
             }
             mainHandler.post {

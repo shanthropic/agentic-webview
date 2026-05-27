@@ -11,7 +11,9 @@ data class AgentState(
     val title: String,
     val pageState: PageLifecycleState,
     val elementCount: Int,
-    val truncated: Boolean
+    val truncated: Boolean,
+    val selectorMap: Map<String, String>? = null,
+    val compactTree: String? = null
 )
 
 @Serializable

@@ -12,7 +12,11 @@ data class AgenticWebViewConfig(
     val actionRetryCount: Int = 2,
     val enableDebugLogging: Boolean = false,
     val userAgent: String? = null,
-    val allowedHosts: Set<String>? = null
+    val allowedHosts: Set<String>? = null,
+    val viewportExpansion: Int = 0,
+    val elementStabilityTimeoutMs: Long = 1000L,
+    val enableAntiDetection: Boolean = true,
+    val includeAttributes: List<String>? = null
 ) {
     class Builder {
         private var jsEvaluationTimeoutMs: Long = 5_000L
@@ -27,6 +31,10 @@ data class AgenticWebViewConfig(
         private var enableDebugLogging: Boolean = false
         private var userAgent: String? = null
         private var allowedHosts: Set<String>? = null
+        private var viewportExpansion: Int = 0
+        private var elementStabilityTimeoutMs: Long = 1000L
+        private var enableAntiDetection: Boolean = true
+        private var includeAttributes: List<String>? = null
 
         fun setJsEvaluationTimeoutMs(timeout: Long) = apply { this.jsEvaluationTimeoutMs = timeout }
         fun setPageSettleTimeoutMs(timeout: Long) = apply { this.pageSettleTimeoutMs = timeout }
@@ -40,12 +48,18 @@ data class AgenticWebViewConfig(
         fun setEnableDebugLogging(enabled: Boolean) = apply { this.enableDebugLogging = enabled }
         fun setUserAgent(userAgent: String?) = apply { this.userAgent = userAgent }
         fun setAllowedHosts(hosts: Set<String>?) = apply { this.allowedHosts = hosts }
+        fun setViewportExpansion(expansion: Int) = apply { this.viewportExpansion = expansion }
+        fun setElementStabilityTimeoutMs(timeout: Long) = apply { this.elementStabilityTimeoutMs = timeout }
+        fun setEnableAntiDetection(enabled: Boolean) = apply { this.enableAntiDetection = enabled }
+        fun setIncludeAttributes(attrs: List<String>?) = apply { this.includeAttributes = attrs }
 
         fun build() = AgenticWebViewConfig(
             jsEvaluationTimeoutMs, pageSettleTimeoutMs, pageSettleDebounceMs,
             screenshotEnabled, screenshotQuality, screenshotMaxDimension,
             maxDomElements, domMutationThrottleMs, actionRetryCount,
-            enableDebugLogging, userAgent, allowedHosts
+            enableDebugLogging, userAgent, allowedHosts,
+            viewportExpansion, elementStabilityTimeoutMs,
+            enableAntiDetection, includeAttributes
         )
     }
 }

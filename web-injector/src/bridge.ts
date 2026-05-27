@@ -1,9 +1,7 @@
-export const BRIDGE_VERSION = 1;
-
 declare global {
     interface Window {
         AgenticBridge?: {
-            onDomUpdate(token: string, version: number, json: string): void;
+            onDomUpdate(token: string, json: string): void;
             onError(token: string, errorJson: string): void;
         };
     }
@@ -18,7 +16,7 @@ export class Bridge {
 
     public notifyDomUpdate(json: string): void {
         if (window.AgenticBridge && this.sessionToken) {
-            (window.AgenticBridge as any).onDomUpdate(this.sessionToken, BRIDGE_VERSION, json);
+            (window.AgenticBridge as any).onDomUpdate(this.sessionToken, json);
         }
     }
 
