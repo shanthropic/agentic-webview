@@ -20,6 +20,18 @@ For vision-capable models (like GPT-4o or Claude 3.5 Sonnet), the SDK provides a
 - **Hardware Acceleration**: The SDK uses `PixelCopy` to ensure that hardware-accelerated content (videos, animations, canvas-based widgets) is correctly captured in the screenshot.
 - **Coordinate Sync**: The coordinates in the accessibility tree are perfectly synced with the screenshot, allowing the model to "see" exactly what it is "touching."
 
+### Selector Map
+The SDK provides a `selectorMap` — a mapping from `highlightIndex` to `agentId`. This is useful when the LLM references elements by their visual index (e.g., "click element [5]") rather than by the full `agentId` string. The `compactTree` output uses these same indices.
+
+### Compact Tree
+For maximum token efficiency, the SDK produces a `compactTree` — a text-based representation of interactive elements formatted as:
+
+```
+[highlightIndex]<tag attr1=val1 attr2=val2>text />
+```
+
+This format is significantly more compact than the JSON accessibility tree and includes scroll position context. Use it when sending the page state to an LLM where token cost is a concern.
+
 ---
 
 ## Action: The "Hands" of the Agent
@@ -32,13 +44,50 @@ The SDK exposes a **Live State Stream** (`controller.state`). Instead of polling
 ### Recommended Tool Schema
 Map your LLM's functions to these SDK actions:
 
+**Navigation:**
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| `navigate` | `url` | Direct jump to a new page. |
+| `go_back` | — | Navigate back in history. |
+| `go_forward` | — | Navigate forward in history. |
+| `refresh` | — | Reload the current page. |
+| `wait` | `durationMs` | Useful when the agent expects an animation or a slow network update. |
+
+**Interaction:**
+
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
 | `click` | `agentId` | Taps on the element. |
-| `input_text` | `agentId`, `text` | Fuses focusing, clearing, and typing into one reliable operation. |
+| `long_press` | `agentId`, `durationMs` | Long press on the element. |
+| `input_text` | `agentId`, `text`, `clearFirst` | Fuses focusing, clearing, and typing into one reliable operation. |
+| `select_option` | `agentId`, `value` | Select a `<select>` option by value. |
+| `send_keys` | `keys` | Keyboard shortcuts (e.g., `"Control+A"`, `"Enter"`). |
+
+**Scrolling:**
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
 | `scroll` | `direction`, `amount` | Direction: `UP`, `DOWN`, `LEFT`, `RIGHT`. Amount: `0.0` to `1.0`. |
-| `navigate` | `url` | Direct jump to a new page. |
-| `wait` | `durationMs` | Useful when the agent expects an animation or a slow network update. |
+| `scroll_to_percent` | `yPercent`, `agentId?` | Scroll to a percentage of the page height. |
+| `scroll_to_text` | `text`, `nth` | Find visible text on the page and scroll to it. |
+| `scroll_to_top` | `agentId?` | Scroll to the top of the page or a scrollable element. |
+| `scroll_to_bottom` | `agentId?` | Scroll to the bottom of the page or a scrollable element. |
+| `previous_page` | `agentId?` | Scroll up by one viewport height. |
+| `next_page` | `agentId?` | Scroll down by one viewport height. |
+
+**Dropdowns:**
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| `get_dropdown_options` | `agentId` | Enumerate all `<select>` options. Result stored in `lastDropdownOptions`. |
+| `select_dropdown_option` | `agentId`, `text` | Select a dropdown option by matching its display text. |
+
+**Completion:**
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| `done` | `text`, `success` | Signal that the agent has completed its task. |
 
 ---
 
@@ -46,10 +95,13 @@ Map your LLM's functions to these SDK actions:
 
 When building your agent's system prompt, consider including the following instructions:
 
-1.  **Analyze the Tree First**: "Before taking an action, scan the `accessibilityTree` to find the `agentId` of the element you want to interact with."
+1.  **Analyze the Tree First**: "Before taking an action, scan the `accessibilityTree` or `compactTree` to find the `agentId` of the element you want to interact with."
 2.  **Verify Visibility**: "Do not attempt to click elements marked as `occluded: true`. If your target is occluded, look for a way to dismiss the overlay (e.g., a 'Close' button or 'Accept Cookies')."
-3.  **Use Strategic Scrolling**: "If the element you need is not in the current tree, use the `scroll` tool to move down the page."
-4.  **Confirm Outcomes**: "After every action, call `captureState` again to verify the result of your action and see if the page has changed."
+3.  **Use Strategic Scrolling**: "If the element you need is not in the current tree, use `scroll_to_text` to find it directly, or `scroll` / `next_page` to move through the page."
+4.  **Handle Dropdowns Properly**: "For `<select>` elements, first call `get_dropdown_options` to see available choices, then call `select_dropdown_option` with the matching text."
+5.  **Use Keyboard Shortcuts**: "Use `send_keys` for keyboard interactions like `Control+A` (select all), `Enter` (submit), or `Escape` (dismiss)."
+6.  **Confirm Outcomes**: "After every action, call `captureState` again to verify the result of your action and see if the page has changed."
+7.  **Signal Completion**: "When the task is done, call `done` with a summary of what was accomplished."
 
 ---
 

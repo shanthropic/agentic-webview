@@ -14,11 +14,12 @@ An Android SDK library that gives LLM-powered AI agents real web-browsing capabi
 
 ## Architecture
 
-The SDK is built in three layers:
+The SDK is built in two layers:
 
-1.  **TypeScript DOM Engine (`web-injector/`)**: A bundled script injected into pages that handles DOM parsing and coordinate math.
-2.  **Kotlin SDK Core (`agentic-webview/`)**: The Android library containing the custom WebView, orchestrator, and Compose integration.
-3.  **Action Pipeline**: A mutex-serialized pipeline that translates high-level agent actions into native Android touch events.
+1.  **TypeScript DOM Engine (`web-injector/`)**: A single IIFE bundle injected into pages that handles DOM parsing, interactivity detection, coordinate math, and framework-safe input simulation. Exposes `window.__AgenticInternal`.
+2.  **Kotlin SDK Core (`agentic-webview/`)**: The Android library containing the custom WebView, `AgenticWebController` orchestrator, `JsBridge` (`@JavascriptInterface`), `ScreenshotCapture`, and Compose integration.
+
+Communication flows via `evaluateJavascript` (Kotlin → JS) and `@JavascriptInterface` callbacks (JS → Kotlin), secured by a per-navigation session UUID token.
 
 ## Setup
 
@@ -35,6 +36,8 @@ dependencies {
     implementation(project(":agentic-webview"))
 }
 ```
+
+The library includes Jetpack Compose dependencies. Use `AgenticWebViewComposable` for Compose integration, or `AgenticWebView` directly for View-based layouts.
 
 ## Usage
 
@@ -65,12 +68,17 @@ if (result is AgentResult.Success) {
 ```
 
 ### Agent Actions
-The SDK supports a wide range of browsing actions:
--   `Click(agentId)`
--   `InputText(agentId, text)`
--   `Scroll(direction, amount)`
--   `Navigate(url)`
--   `GoBack`, `GoForward`, `Refresh`, `Wait`
+The SDK supports 21 browsing actions:
+
+**Navigation:** `Navigate(url)`, `GoBack`, `GoForward`, `Refresh`, `Wait(durationMs)`
+
+**Interaction:** `Click(agentId)`, `LongPress(agentId, durationMs)`, `InputText(agentId, text, clearFirst)`, `SelectOption(agentId, value)`, `SendKeys(keys)`
+
+**Scrolling:** `Scroll(direction, amount)`, `ScrollToPercent(yPercent, agentId?)`, `ScrollToText(text, nth)`, `ScrollToTop(agentId?)`, `ScrollToBottom(agentId?)`, `PreviousPage(agentId?)`, `NextPage(agentId?)`
+
+**Dropdowns:** `GetDropdownOptions(agentId)`, `SelectDropdownOption(agentId, text)`
+
+**Completion:** `Done(text, success)`
 
 ## Testing
 
@@ -84,8 +92,7 @@ The SDK includes a comprehensive instrumented test suite using `MockWebServer`.
 
 -   `AGENTS.md`: Machine-readable instructions and context for AI coding agents.
 -   `docs/AGENT_GUIDE.md`: Comprehensive guide for developers building web agents using this SDK.
--   `walkthrough.artifact.md`: Technical implementation details and verification summary.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the Apache License 2.0.

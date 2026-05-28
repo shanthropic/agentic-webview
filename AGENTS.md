@@ -4,7 +4,6 @@
 - **Description**: Agentic WebView SDK - An Android library providing an accessibility-tree-based perception layer and native interaction pipeline for LLM-powered web agents.
 - **Primary Stack**: Kotlin (Android SDK), TypeScript (DOM Injection), Gradle, npm, esbuild.
 - **Package Manager**: Use `./gradlew` for Android/Kotlin and `npm` for the `web-injector` module.
-- **Bridge Version**: 2 (version mismatch triggers automatic re-injection)
 
 ## Essential Commands
 - **Build Full Project**: `./gradlew assembleDebug`
@@ -30,20 +29,17 @@
   - `src/bridge.ts`: JS-to-Kotlin bridge (`@JavascriptInterface` wrapper).
 
 ## AgentAction Types
-
-### Original
 - `Click(agentId)`, `LongPress(agentId, durationMs)`, `InputText(agentId, text, clearFirst)`
 - `SelectOption(agentId, value)`, `Scroll(direction, amount)`, `Navigate(url)`
 - `GoBack`, `GoForward`, `Refresh`, `Wait(durationMs)`
-
-### New (v2)
 - `SendKeys(keys)` — Keyboard shortcuts (e.g., `"Control+A"`, `"Enter"`)
 - `ScrollToPercent(yPercent, agentId?)` — Scroll to percentage position
 - `ScrollToText(text, nth)` — Find visible text and scroll to it
-- `ScrollToTop`, `ScrollToBottom` — Scroll to extremes
-- `PreviousPage`, `NextPage` — Scroll by viewport height
+- `ScrollToTop(agentId?)`, `ScrollToBottom(agentId?)` — Scroll to extremes
+- `PreviousPage(agentId?)`, `NextPage(agentId?)` — Scroll by viewport height
 - `GetDropdownOptions(agentId)` — Enumerate `<select>` options (result stored in `lastDropdownOptions`)
 - `SelectDropdownOption(agentId, text)` — Select option by matching text
+- `Done(text, success)` — Signal task completion
 
 ## Public API (AgenticWebController)
 
@@ -62,25 +58,25 @@
 - `viewportInfo: ViewportInfo` — DPR, scale, scroll, dimensions
 - `url: String`, `title: String`, `pageState: PageLifecycleState`
 - `elementCount: Int`, `truncated: Boolean`
-- `selectorMap: Map<String, String>?` — highlightIndex → agentId mapping (NEW)
-- `compactTree: String?` — LLM-optimized text format (NEW)
+- `selectorMap: Map<String, String>?` — highlightIndex → agentId mapping
+- `compactTree: String?` — LLM-optimized text format
 
 ## AccessibilityNode Fields
 - `id`, `tag`, `text`, `role`, `bounds`, `attributes`, `occluded`, `inIframe`
-- `xpath: String` — Relative XPath from nearest boundary (NEW)
-- `isTopElement: Boolean` — Topmost at position via elementFromPoint (NEW)
-- `isInteractive: Boolean` — Cursor/tag/role-based detection (NEW)
-- `highlightIndex: Int?` — LLM reference index (NEW)
+- `xpath: String` — Relative XPath from nearest boundary
+- `isTopElement: Boolean` — Topmost at position via elementFromPoint
+- `isInteractive: Boolean` — Cursor/tag/role-based detection
+- `highlightIndex: Int?` — LLM reference index
 
 ## Config Options (AgenticWebViewConfig)
 - `jsEvaluationTimeoutMs`, `pageSettleTimeoutMs`, `pageSettleDebounceMs`
 - `screenshotEnabled`, `screenshotQuality`, `screenshotMaxDimension`
 - `maxDomElements`, `domMutationThrottleMs`, `actionRetryCount`
-- `enableDebugLogging`, `userAgent`, `allowedHosts`
-- `viewportExpansion: Int` — px to expand viewport; -1 = all visible (NEW)
-- `elementStabilityTimeoutMs: Long` — Wait for element stability (NEW)
-- `enableAntiDetection: Boolean` — Hide webdriver, force open shadow DOM (NEW)
-- `includeAttributes: List<String>?` — Attributes for serializer (NEW)
+- `enableDebugLogging`, `userAgent`, `allowedHosts`, `deniedHosts`, `homeUrl`
+- `viewportExpansion: Int` — px to expand viewport; -1 = all visible
+- `elementStabilityTimeoutMs: Long` — Wait for element stability
+- `enableAntiDetection: Boolean` — Hide webdriver, force open shadow DOM
+- `includeAttributes: List<String>?` — Attributes for serializer
 
 ## Coding Standards
 - **Thread Safety**: All `AgenticWebController` operations must be serialized via the internal `Mutex`.
