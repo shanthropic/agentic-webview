@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <g transform="translate(256, 256)">
+    <!-- Web Browser / WebView Window Frame -->
+    <rect x="48" y="48" width="416" height="416" rx="48" stroke="#171717" stroke-width="32" fill="none" />
+
+    <circle cx="112" cy="112" r="16" fill="#171717" />
+    <circle cx="176" cy="112" r="16" fill="#171717" />
+
+    <g stroke="#171717" stroke-width="36" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 112 240
+               C 112 304, 144 368, 176 368
+               C 208 368, 224 160, 256 160
+               C 288 160, 304 368, 336 368
+               C 368 368, 400 304, 400 240" />
+
+      <!-- Floating Crossbar -->
+      <line x1="220" y1="264" x2="292" y2="264" />
+    </g>
+  </g>
+</svg>

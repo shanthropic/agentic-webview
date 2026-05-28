@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" width="128" height="128" alt="Agentic WebView Logo" />
+</p>
+
 # Agentic WebView SDK
 
 An Android SDK library that gives LLM-powered AI agents real web-browsing capabilities inside mobile apps. The SDK bridges the gap between large language models and Android WebViews by injecting scripts to parse and simplify the DOM into an accessibility tree, capturing viewport screenshots for vision models, and translating LLM tool calls into native Android touch interactions.
