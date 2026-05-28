@@ -66,6 +66,21 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
     val settings by viewModel.settings.collectAsState()
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
+    var canGoBack by remember { mutableStateOf(false) }
+    var canGoForward by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        canGoBack = viewModel.controller.canGoBack()
+        canGoForward = viewModel.controller.canGoForward()
+    }
+
+    fun dispatchAction(action: AgentAction) {
+        scope.launch {
+            viewModel.controller.executeAction(action)
+            canGoBack = viewModel.controller.canGoBack()
+            canGoForward = viewModel.controller.canGoForward()
+        }
+    }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -75,12 +90,13 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
         topBar = {
             BrowserTopBar(
                 progress = loadingProgress,
-                onNavigate = { url ->
-                    scope.launch {
-                        viewModel.controller.executeAction(AgentAction.Navigate(url))
-                    }
-                },
-                onSettingsClick = { showSettings = true }
+                onNavigate = { url -> dispatchAction(AgentAction.Navigate(url)) },
+                onSettingsClick = { showSettings = true },
+                onGoBack = { dispatchAction(AgentAction.GoBack) },
+                onGoForward = { dispatchAction(AgentAction.GoForward) },
+                onRefresh = { dispatchAction(AgentAction.Refresh) },
+                canGoBack = canGoBack,
+                canGoForward = canGoForward
             )
         },
         sheetContent = {
@@ -118,7 +134,12 @@ fun MainScreen(viewModel: AgenticWebViewModel) {
 fun BrowserTopBar(
     progress: Int,
     onNavigate: (String) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onGoBack: () -> Unit,
+    onGoForward: () -> Unit,
+    onRefresh: () -> Unit,
+    canGoBack: Boolean,
+    canGoForward: Boolean
 ) {
     var urlText by remember { mutableStateOf("https://www.google.com") }
 
@@ -128,6 +149,19 @@ fun BrowserTopBar(
     ) {
         Column {
             CenterAlignedTopAppBar(
+                navigationIcon = {
+                    Row {
+                        IconButton(onClick = onGoBack, enabled = canGoBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                        IconButton(onClick = onGoForward, enabled = canGoForward) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward")
+                        }
+                        IconButton(onClick = onRefresh) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        }
+                    }
+                },
                 title = {
                     TextField(
                         value = urlText,
@@ -445,7 +479,7 @@ fun SettingsSheet(
 @Composable
 fun BrowserTopBarPreview() {
     AppTheme {
-        BrowserTopBar(progress = 45, onNavigate = {}, onSettingsClick = {})
+        BrowserTopBar(progress = 45, onNavigate = {}, onSettingsClick = {}, onGoBack = {}, onGoForward = {}, onRefresh = {}, canGoBack = true, canGoForward = false)
     }
 }
 

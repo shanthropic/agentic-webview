@@ -16,4 +16,5 @@ sealed class AgentError {
     data class PageNotReady(val currentState: PageLifecycleState) : AgentError()
     data class Timeout(val operation: String, val timeoutMs: Long) : AgentError()
     data class FileUploaderDetected(val agentId: String) : AgentError()
+    data class NoNavigationHistory(val direction: String) : AgentError()
 }

@@ -207,6 +207,7 @@ class AgenticWebController(
         repeat(config.actionRetryCount + 1) { attempt ->
             val result = executeActionInternal(action)
             if (result is AgentResult.Success) return result
+            if (result is AgentResult.Error && result.error is AgentError.NoNavigationHistory) return result
             if (attempt == config.actionRetryCount) return result
             delay(500)
         }
@@ -223,9 +224,27 @@ class AgenticWebController(
             is AgentAction.SelectOption -> handleSelectOption(action.agentId, action.value)
             is AgentAction.Scroll -> handleScroll(action.direction, action.amount)
             is AgentAction.Navigate -> handleNavigate(action.url)
-            is AgentAction.GoBack -> { wv.goBack(); AgentResult.Success(Unit) }
-            is AgentAction.GoForward -> { wv.goForward(); AgentResult.Success(Unit) }
-            is AgentAction.Refresh -> { wv.reload(); AgentResult.Success(Unit) }
+            is AgentAction.GoBack -> {
+                if (!withContext(Dispatchers.Main) { wv.canGoBack() }) {
+                    return AgentResult.Error(AgentError.NoNavigationHistory("back"))
+                }
+                val urlBefore = withContext(Dispatchers.Main) { wv.url }
+                withContext(Dispatchers.Main) { wv.goBack() }
+                waitForPageSettlement(wv, urlBefore)
+            }
+            is AgentAction.GoForward -> {
+                if (!withContext(Dispatchers.Main) { wv.canGoForward() }) {
+                    return AgentResult.Error(AgentError.NoNavigationHistory("forward"))
+                }
+                val urlBefore = withContext(Dispatchers.Main) { wv.url }
+                withContext(Dispatchers.Main) { wv.goForward() }
+                waitForPageSettlement(wv, urlBefore)
+            }
+            is AgentAction.Refresh -> {
+                val urlBefore = withContext(Dispatchers.Main) { wv.url }
+                withContext(Dispatchers.Main) { wv.reload() }
+                waitForPageSettlement(wv, urlBefore)
+            }
             is AgentAction.Wait -> { delay(action.durationMs); AgentResult.Success(Unit) }
             is AgentAction.SendKeys -> handleSendKeys(action.keys)
             is AgentAction.ScrollToPercent -> handleScrollToPercent(action.yPercent, action.agentId)
@@ -334,6 +353,10 @@ class AgenticWebController(
         return AgentResult.Success(Unit)
     }
 
+    suspend fun canGoBack(): Boolean = withContext(Dispatchers.Main) { webView?.canGoBack() == true }
+
+    suspend fun canGoForward(): Boolean = withContext(Dispatchers.Main) { webView?.canGoForward() == true }
+
     suspend fun getDropdownOptions(agentId: String): AgentResult<List<DropdownOption>> = mutex.withLock {
         return try {
             val json = when (val result = evalJsRaw("__AgenticInternal.getDropdownOptions('$agentId')")) {
@@ -375,17 +398,16 @@ class AgenticWebController(
         return AgentResult.Success(Unit)
     }
 
-    private suspend fun handleNavigate(url: String): AgentResult<Unit> {
-        val wv = webView ?: return AgentResult.Error(AgentError.PageNotReady(PageLifecycleState.IDLE))
-        withContext(Dispatchers.Main) { wv.loadUrl(url) }
-
+    private suspend fun waitForPageSettlement(wv: AgenticWebView, urlForError: String?): AgentResult<Unit> {
         val settled = withTimeoutOrNull(config.pageSettleTimeoutMs) {
             while (true) {
                 val state = withContext(Dispatchers.Main) { wv.pageLifecycleState }
                 if (state == PageLifecycleState.COMPLETE) break
                 if (state == PageLifecycleState.ERROR) {
                     val httpCode = withContext(Dispatchers.Main) { wv.lastNavigationHttpError }
-                    return@withTimeoutOrNull AgentResult.Error(AgentError.NavigationFailed(url, httpCode))
+                    return@withTimeoutOrNull AgentResult.Error(
+                        AgentError.NavigationFailed(urlForError ?: wv.url ?: "", httpCode)
+                    )
                 }
                 delay(100)
             }
@@ -395,10 +417,16 @@ class AgenticWebController(
 
         val httpCode = withContext(Dispatchers.Main) { wv.lastNavigationHttpError }
         return if (httpCode != null && httpCode >= 400) {
-            AgentResult.Error(AgentError.NavigationFailed(url, httpCode))
+            AgentResult.Error(AgentError.NavigationFailed(urlForError ?: wv.url ?: "", httpCode))
         } else {
             AgentResult.Error(AgentError.Timeout("Navigation", config.pageSettleTimeoutMs))
         }
+    }
+
+    private suspend fun handleNavigate(url: String): AgentResult<Unit> {
+        val wv = webView ?: return AgentResult.Error(AgentError.PageNotReady(PageLifecycleState.IDLE))
+        withContext(Dispatchers.Main) { wv.loadUrl(url) }
+        return waitForPageSettlement(wv, url)
     }
 
     // ─── Element Coordinates ──────────────────────────────────────────

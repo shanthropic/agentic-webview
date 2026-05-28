@@ -61,4 +61,31 @@ class AgenticWebviewTools(private val controller: AgenticWebController) : ToolSe
             is AgentResult.Error -> "Error: ${result.error}"
         }
     }
+
+    @Tool
+    @LLMDescription("Navigates back in the browser history.")
+    suspend fun webview_go_back(): String {
+        return when (val result = controller.executeAction(AgentAction.GoBack)) {
+            is AgentResult.Success -> "Navigated back"
+            is AgentResult.Error -> "Error: ${result.error}"
+        }
+    }
+
+    @Tool
+    @LLMDescription("Navigates forward in the browser history.")
+    suspend fun webview_go_forward(): String {
+        return when (val result = controller.executeAction(AgentAction.GoForward)) {
+            is AgentResult.Success -> "Navigated forward"
+            is AgentResult.Error -> "Error: ${result.error}"
+        }
+    }
+
+    @Tool
+    @LLMDescription("Refreshes the current page.")
+    suspend fun webview_refresh(): String {
+        return when (val result = controller.executeAction(AgentAction.Refresh)) {
+            is AgentResult.Success -> "Page refreshed"
+            is AgentResult.Error -> "Error: ${result.error}"
+        }
+    }
 }
