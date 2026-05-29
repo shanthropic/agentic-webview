@@ -12,6 +12,7 @@ export default function AgentIntegration() {
           This guide explains how to use the <InlineCode className="text-tk-class">AgenticWebController</InlineCode> to build LLM-powered agents that can perceive and interact with web pages.
         </>
       }
+      seoDescription="This guide explains how to use the AgenticWebController to build LLM-powered agents that can perceive and interact with web pages."
     >
         <section>
           <h2 className="text-xl font-medium mb-4 text-vp-fg">1. Capturing Page State</h2>
