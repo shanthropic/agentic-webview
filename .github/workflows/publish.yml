@@ -57,8 +57,17 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
+      - name: Build demo app APK (debug signed)
+        run: ./gradlew :app:assembleDebug
+        env:
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
+
+      - name: Rename APK with version
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           tag_name: ${{ github.ref_name }}
+          files: app/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
