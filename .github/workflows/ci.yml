@@ -35,7 +35,9 @@ jobs:
           npm run build
 
       - name: Copy web-injector bundle to assets
-        run: cp web-injector/dist/agentic_core.min.js agentic-webview/src/main/assets/
+        run: |
+          mkdir -p agentic-webview/src/main/assets
+          cp web-injector/dist/agentic_core.min.js agentic-webview/src/main/assets/
 
       - name: Build library
         run: ./gradlew :agentic-webview:assembleRelease
