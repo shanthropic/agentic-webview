@@ -8,6 +8,7 @@ Understanding the `PageLifecycleState` is key to knowing when it's safe to inter
 
 | State | Description |
 | :--- | :--- |
+| `IDLE` | Initial state before any navigation has started. |
 | `LOADING` | Page is currently loading. |
 | `INTERACTIVE` | DOM is ready, but sub-resources (images, scripts) might still be loading. |
 | `COMPLETE` | Page is fully settled and stable. **Capture state now.** |
@@ -32,6 +33,9 @@ The SDK uses `AgentResult` to provide detailed feedback on why an operation fail
 | `ElementOccluded` | The element is covered by a modal, overlay, or another element. |
 | `NavigationFailed` | Page failed to load. Includes the `httpCode` if available. |
 | `JsEvaluationFailed` | The internal JS engine failed (check logs for details). |
+| `JsEvaluationTimeout` | JavaScript execution exceeded the configured `jsEvaluationTimeoutMs`. |
+| `ScreenshotFailed` | Screenshot capture failed (e.g., `PixelCopy` error). |
+| `PageNotReady` | The page is not in a valid state for the operation. Includes `currentState`. |
 | `FileUploaderDetected`| Clicking a file input is blocked (requires native file picker). |
 | `NoNavigationHistory`| `GoBack` or `GoForward` called when there's no history. |
 | `Timeout` | The operation (navigation or stability) exceeded the config timeout. |
@@ -53,7 +57,7 @@ when (val result = controller.executeAction(action)) {
 ## 3. Debugging
 
 ### Enable SDK Logging
-Set `enableDebugLogging` to `true` in your config to see detailed logs in Logcat under the `AgenticSDK` tag.
+Set `enableDebugLogging` to `true` in your config to see detailed logs in Logcat. Logs appear under the `AgenticSDK:<component>` tag pattern (e.g., `AgenticSDK:Controller`, `AgenticSDK:WebView`, `AgenticSDK:Bridge`).
 
 ```kotlin
 val config = AgenticWebViewConfig.Builder()
