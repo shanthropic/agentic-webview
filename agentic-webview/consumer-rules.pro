@@ -1,7 +1,7 @@
 # Preserve JS bridge methods — R8 cannot see calls from JavaScript
--keepclassmembers class com.shantoislamdev.agenticwebview.AgenticWebView$JsBridge {
+-keepclassmembers class dev.shantoislam.agenticwebview.AgenticWebView$JsBridge {
     @android.webkit.JavascriptInterface <methods>;
 }
 
 # Preserve SDK model classes used in serialization
--keep class com.shantoislamdev.agenticwebview.models.** { *; }
+-keep class dev.shantoislam.agenticwebview.models.** { *; }

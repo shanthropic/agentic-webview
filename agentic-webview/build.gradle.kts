@@ -9,7 +9,7 @@ project.extra["license"] = "Apache-2.0"
 project.extra["owner"] = "Shanto Islam (@shantoislamdev)"
 
 android {
-    namespace = "com.shantoislamdev.agenticwebview"
+    namespace = "dev.shantoislam.agenticwebview"
     compileSdk = 37
 
     defaultConfig {
