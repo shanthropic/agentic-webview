@@ -44,7 +44,7 @@ Add the following to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("dev.shantoislam:agentic-webview:0.2.0")
+    implementation("dev.shantoislam:agentic-webview:0.2.1")
 }
 ```
 

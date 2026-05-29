@@ -124,7 +124,7 @@ The Android library features comprehensive instrumented tests using `MockWebServ
 ## Reporting Issues
 
 When reporting an issue, please include:
-1. **SDK Version**: (e.g., `0.2.0`)
+1. **SDK Version**: (e.g., `0.2.1`)
 2. **Android OS version & Device Model**.
 3. **Step-by-step reproduction instructions**, and if possible, a sample URL or HTML snippet that reproduces the issue.
 4. **Relevant Logcat output**: Enable debug logging with `.setEnableDebugLogging(true)` and capture the logs under the `AgenticSDK` tag pattern.

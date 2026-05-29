@@ -115,7 +115,7 @@ Note: `AccessibilityNode` is a TypeScript interface defined in `web-injector/src
 
 ## AgenticWebView Static API
 - `AgenticWebView.init()` — No-op initializer (reserved for future use)
-- `AgenticWebView.getVersion(): String` — Returns SDK version string (e.g., `"0.2.0"`)
+- `AgenticWebView.getVersion(): String` — Returns SDK version string (e.g., `"0.2.1"`)
 
 ## AgenticWebViewListener (callback interface)
 - `onStateChanged(state: PageLifecycleState)` — Lifecycle state transition
