@@ -1,7 +1,10 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.maven.publish)
 }
 
 // License Information
@@ -62,10 +65,52 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+
+    coordinates(
+        groupId = "dev.shantoislam",
+        artifactId = "agentic-webview",
+        version = project.findProperty("VERSION_NAME") as String
+    )
+
+    pom {
+        name.set("Agentic WebView SDK")
+        description.set("Android SDK library that gives LLM-powered AI agents real web-browsing capabilities inside mobile apps")
+        url.set("https://github.com/shantoislamdev/agentic-webview")
+
+        licenses {
+            license {
+                name.set("Apache License 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
+            }
+        }
+
+        developers {
+            developer {
+                id.set("shantoislamdev")
+                name.set("Shanto Islam")
+                url.set("https://github.com/shantoislamdev")
+            }
+        }
+
+        scm {
+            url.set("https://github.com/shantoislamdev/agentic-webview")
+            connection.set("scm:git:git://github.com/shantoislamdev/agentic-webview.git")
+            developerConnection.set("scm:git:ssh://git@github.com/shantoislamdev/agentic-webview.git")
+        }
+    }
+}
+
 val bundleWebInjector by tasks.registering(Exec::class) {
     workingDir = file("${rootProject.projectDir}/web-injector")
-    // Use cmd /c for Windows to run npm
-    commandLine("cmd", "/c", "npm", "run", "build")
+    if (System.getProperty("os.name").lowercase().contains("windows")) {
+        commandLine("cmd", "/c", "npm", "run", "build")
+    } else {
+        commandLine("npm", "run", "build")
+    }
     doLast {
         copy {
             from("${rootProject.projectDir}/web-injector/dist/agentic_core.min.js")

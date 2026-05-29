@@ -36,13 +36,15 @@ Communication flows via `evaluateJavascript` (Kotlin → JS) and `@JavascriptInt
 -   Compose (optional)
 
 ### 2. Dependency
-Add the following to your `build.gradle.kts`:
+Add the following to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation(project(":agentic-webview"))
+    implementation("dev.shantoislam:agentic-webview:0.2.0")
 }
 ```
+
+> **Note:** Make sure `mavenCentral()` is in your `dependencyResolutionManagement.repositories` block in `settings.gradle.kts`.
 
 The library includes Jetpack Compose dependencies. Use `AgenticWebViewComposable` for Compose integration, or `AgenticWebView` directly for View-based layouts.
 
