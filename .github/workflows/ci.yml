@@ -39,6 +39,9 @@ jobs:
           mkdir -p agentic-webview/src/main/assets
           cp web-injector/dist/agentic_core.min.js agentic-webview/src/main/assets/
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       - name: Build library
         run: ./gradlew :agentic-webview:assembleRelease
 
