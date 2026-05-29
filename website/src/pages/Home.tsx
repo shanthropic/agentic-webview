@@ -8,6 +8,7 @@ import { InlineCode } from '../components/InlineCode';
 import { Footer } from '../components/Footer';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { useLatestRelease } from '../hooks/useLatestRelease';
+import { SEO } from '../components/SEO';
 
 const integrationCode = `// initialize the controller
 val controller = remember { AgenticWebController() }
@@ -52,6 +53,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-vp-bg text-vp-fg font-sans antialiased flex flex-col items-center">
+      <SEO 
+        title="Agentic WebView SDK"
+        description="Bridging large language models and Android WebViews for seamless agentic interactions on device."
+        path="/"
+      />
       <header className="w-full max-w-[700px] px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-end">
         <ThemeToggle />
       </header>
