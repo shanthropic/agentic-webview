@@ -93,4 +93,3 @@
 
 ## Documentation References
 - `README.md`: General overview and setup for humans.
-- `docs/AGENT_GUIDE.md`: Guide for developers *using* this SDK to build agents.
