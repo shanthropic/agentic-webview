@@ -47,7 +47,7 @@ class AgenticWebView @JvmOverloads constructor(
 
         fun init() {}
 
-        fun getVersion(): String = "0.1.0"
+        fun getVersion(): String = "0.2.0"
     }
 
     init {
