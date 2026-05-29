@@ -15,7 +15,7 @@ export default function IntegrationGuide() {
         <section>
           <h2 className="text-xl font-medium mb-4 text-vp-fg">1. Add Dependency</h2>
           <CodeSnippet code={`dependencies {
-    implementation("com.shantoislamdev:agentic-webview:${version}")
+    implementation("dev.shantoislam:agentic-webview:${version}")
 }`} />
         </section>
 
@@ -67,12 +67,20 @@ AgenticWebViewComposable(
               </thead>
               <tbody className="text-vp-text divide-y divide-vp-border">
                 <tr><td className="px-5 py-3"><InlineCode>screenshotEnabled</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-keyword">true</InlineCode></td><td className="px-5 py-3">Capture screenshots during state capture.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>screenshotQuality</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">75</InlineCode></td><td className="px-5 py-3">JPEG compression quality (0-100).</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>screenshotMaxDimension</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">1920</InlineCode></td><td className="px-5 py-3">Max width/height of captured screenshots.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>maxDomElements</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">500</InlineCode></td><td className="px-5 py-3">Limit the number of nodes in the tree.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>enableAntiDetection</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-keyword">true</InlineCode></td><td className="px-5 py-3">Hide WebDriver flags.</td></tr>
-                <tr><td className="px-5 py-3"><InlineCode>viewportExpansion</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">0</InlineCode></td><td className="px-5 py-3">Px to capture outside viewport.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>viewportExpansion</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">0</InlineCode></td><td className="px-5 py-3">Px to capture outside viewport (-1 for full page).</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>jsEvaluationTimeoutMs</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">5000</InlineCode></td><td className="px-5 py-3">Timeout for JavaScript execution.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>pageSettleTimeoutMs</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">10000</InlineCode></td><td className="px-5 py-3">Max wait time for page complete state.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>pageSettleDebounceMs</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">500</InlineCode></td><td className="px-5 py-3">Debounce delay before declaring page settled.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>elementStabilityTimeoutMs</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">1000</InlineCode></td><td className="px-5 py-3">Wait time for element positions to stabilize.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>domMutationThrottleMs</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">300</InlineCode></td><td className="px-5 py-3">Throttle interval for DOM mutation callbacks.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>actionRetryCount</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-number">2</InlineCode></td><td className="px-5 py-3">Number of retry attempts for failed actions.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>enableDebugLogging</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-keyword">false</InlineCode></td><td className="px-5 py-3">Enable detailed SDK logs under AgenticSDK:* tags.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>userAgent</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-keyword">null</InlineCode></td><td className="px-5 py-3">Custom User-Agent string (uses system default if null).</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>includeAttributes</InlineCode></td><td className="px-5 py-3"><InlineCode className="text-tk-keyword">null</InlineCode></td><td className="px-5 py-3">Specific HTML attributes to include in tree serializer.</td></tr>
               </tbody>
             </table>
           </div>

@@ -61,6 +61,7 @@ export default function AgentIntegration() {
             <li><InlineCode>AgentAction.Click(agentId: String)</InlineCode>: Native tap at the element's center.</li>
             <li><InlineCode>AgentAction.LongPress(agentId: String, durationMs: Long)</InlineCode>: Long press (default 500ms).</li>
             <li><InlineCode>AgentAction.InputText(agentId: String, text: String, clearFirst: Boolean)</InlineCode>: Focuses and types.</li>
+            <li><InlineCode>AgentAction.SelectOption(agentId: String, value: String)</InlineCode>: Sets a <InlineCode>&lt;select&gt;</InlineCode> element's value directly.</li>
             <li><InlineCode>AgentAction.SendKeys(keys: String)</InlineCode>: Simulates keyboard shortcuts.</li>
           </ul>
 
@@ -70,11 +71,12 @@ export default function AgentIntegration() {
             <li><InlineCode>AgentAction.ScrollToPercent(yPercent: Float, agentId: String?)</InlineCode>: Scroll to specific %.</li>
             <li><InlineCode>AgentAction.ScrollToText(text: String, nth: Int)</InlineCode>: Find text and scroll it into view.</li>
             <li><InlineCode>AgentAction.ScrollToTop(agentId?)</InlineCode>, <InlineCode>AgentAction.ScrollToBottom(agentId?)</InlineCode>: Jump to extremes.</li>
-            <li><InlineCode>AgentAction.PreviousPage</InlineCode>, <InlineCode>AgentAction.NextPage</InlineCode>: Scroll by exactly one viewport height.</li>
+            <li><InlineCode>AgentAction.PreviousPage(agentId: String?)</InlineCode>, <InlineCode>AgentAction.NextPage(agentId: String?)</InlineCode>: Scroll by exactly one viewport height.</li>
           </ul>
 
           <h3 className="text-base font-medium mt-8 mb-3 text-vp-fg">Dropdowns & Completion</h3>
           <ul className="list-disc pl-[18px] space-y-3 text-vp-text mb-4">
+            <li><InlineCode>AgentAction.GetDropdownOptions(agentId: String)</InlineCode>: Enumerate all <InlineCode>&lt;option&gt;</InlineCode> elements of a <InlineCode>&lt;select&gt;</InlineCode>.</li>
             <li><InlineCode>AgentAction.SelectDropdownOption(agentId, text)</InlineCode>: Select <InlineCode>&lt;option&gt;</InlineCode> by visible text.</li>
             <li><InlineCode>AgentAction.Done(text: String, success: Boolean)</InlineCode>: Signal task completion.</li>
           </ul>

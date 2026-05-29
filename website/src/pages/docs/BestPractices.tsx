@@ -24,6 +24,7 @@ export default function BestPractices() {
                 </tr>
               </thead>
               <tbody className="text-vp-text divide-y divide-vp-border">
+                <tr><td className="px-5 py-3"><InlineCode>IDLE</InlineCode></td><td className="px-5 py-3">Initial state before any navigation has started.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>LOADING</InlineCode></td><td className="px-5 py-3">Page is currently loading.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>INTERACTIVE</InlineCode></td><td className="px-5 py-3">DOM is ready, but sub-resources (images, scripts) might still be loading.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>COMPLETE</InlineCode></td><td className="px-5 py-3">Page is fully settled and stable. <strong className="text-vp-fg font-medium">Capture state now.</strong></td></tr>
@@ -59,6 +60,9 @@ export default function BestPractices() {
                 <tr><td className="px-5 py-3"><InlineCode>ElementOccluded</InlineCode></td><td className="px-5 py-3">The element is covered by a modal, overlay, or another element.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>NavigationFailed</InlineCode></td><td className="px-5 py-3">Page failed to load. Includes the httpCode if available.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>JsEvaluationFailed</InlineCode></td><td className="px-5 py-3">The internal JS engine failed.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>JsEvaluationTimeout</InlineCode></td><td className="px-5 py-3">JavaScript execution exceeded the configured timeout.</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>ScreenshotFailed</InlineCode></td><td className="px-5 py-3">Screenshot capture failed (e.g., PixelCopy error).</td></tr>
+                <tr><td className="px-5 py-3"><InlineCode>PageNotReady</InlineCode></td><td className="px-5 py-3">The page is not in a valid state for the operation.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>FileUploaderDetected</InlineCode></td><td className="px-5 py-3">Clicking a file input is blocked.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>NoNavigationHistory</InlineCode></td><td className="px-5 py-3">GoBack/GoForward called with no history.</td></tr>
                 <tr><td className="px-5 py-3"><InlineCode>Timeout</InlineCode></td><td className="px-5 py-3">The operation exceeded the config timeout.</td></tr>

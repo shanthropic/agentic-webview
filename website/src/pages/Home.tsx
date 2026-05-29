@@ -48,7 +48,7 @@ controller.executeAction(action)`;
 
 export default function Home() {
   const { version, tagVersion } = useLatestRelease();
-  const gettingStartedCode = `implementation("com.shantoislamdev:agentic-webview:${version}")`;
+  const gettingStartedCode = `implementation("dev.shantoislam:agentic-webview:${version}")`;
 
   return (
     <div className="min-h-screen bg-vp-bg text-vp-fg font-sans antialiased flex flex-col items-center">
