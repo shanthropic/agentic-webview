@@ -9,7 +9,7 @@ Add the following to your `build.gradle.kts` (or `build.gradle`):
 ```kotlin
 dependencies {
     // Replace with the latest version
-    implementation("com.shantoislamdev:agentic-webview:0.2.0")
+    implementation("dev.shantoislam:agentic-webview:0.2.0")
 }
 ```
 
