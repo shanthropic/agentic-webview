@@ -11,13 +11,10 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.60.4",
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.3.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
-    "lightningcss-win32-x64-msvc": "^1.32.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
