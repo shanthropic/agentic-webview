@@ -19,7 +19,7 @@ To use the SDK in a standard View-based layout:
 
 ### Layout XML
 ```xml
-<com.shantoislamdev.agenticwebview.AgenticWebView
+<dev.shantoislam.agenticwebview.AgenticWebView
     android:id="@+id/agentic_webview"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
