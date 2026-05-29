@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="logo.svg" width="128" height="128" alt="Agentic WebView Logo" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg" />
+    <img src="logo.svg" width="128" height="128" alt="Agentic WebView Logo" />
+  </picture>
 </p>
 
 # Agentic WebView SDK
