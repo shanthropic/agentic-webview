@@ -99,8 +99,8 @@ The SDK includes a comprehensive instrumented test suite using `MockWebServer`.
 
 For comprehensive guides and API references, see the following:
 
--   [Integration Guide](docs/integration-guide.md): Installation and basic setup (Views and Compose).
--   [Agent Integration](docs/agent-integration.md): How to capture state and execute actions.
+-   [Getting Started](docs/getting-started.md): Installation and basic setup (Views and Compose).
+-   [Agent Perception & Actions](docs/agent-perception.md): How to capture state and execute actions.
 -   [Best Practices](docs/best-practices.md): Stability, error handling, and debugging.
 -   `AGENTS.md`: Machine-readable instructions and context for AI coding agents.
 
