@@ -45,5 +45,8 @@ jobs:
       - name: Build library
         run: ./gradlew :agentic-webview:assembleRelease
 
+      - name: Build demo app
+        run: ./gradlew :app:assembleDebug
+
       - name: Lint
         run: ./gradlew :agentic-webview:lint
