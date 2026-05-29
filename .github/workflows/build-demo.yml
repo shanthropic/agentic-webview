@@ -1,4 +1,4 @@
-name: CI
+name: Build Demo App
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    name: Build & Lint
+  build-demo:
+    name: Build Demo APK
     runs-on: ubuntu-latest
 
     steps:
@@ -42,8 +42,5 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build library
-        run: ./gradlew :agentic-webview:assembleRelease
-
-      - name: Lint
-        run: ./gradlew :agentic-webview:lint
+      - name: Build demo app
+        run: ./gradlew :app:assembleDebug
