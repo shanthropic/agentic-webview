@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-vp-bg: var(--vp-bg);
+  --color-vp-fg: var(--vp-fg);
+  --color-vp-text: var(--vp-text);
+  --color-vp-selection: var(--vp-selection);
+  --color-vp-muted: var(--vp-muted);
+  --color-vp-subtle: var(--vp-subtle);
+  --color-vp-border: var(--vp-border);
+  --color-vp-link: var(--vp-link);
+  --color-vp-link-hover: var(--vp-link-hover);
+  --color-vp-error: var(--vp-error);
+  --color-vp-input: var(--vp-input);
+  --color-vp-highlight: var(--vp-highlight);
+
+  --color-tk-comment: var(--tk-comment);
+  --color-tk-keyword: var(--tk-keyword);
+  --color-tk-operator: var(--tk-operator);
+  --color-tk-string: var(--tk-string);
+  --color-tk-function: var(--tk-function);
+  --color-tk-class: var(--tk-class);
+  --color-tk-attribute: var(--tk-attribute);
+  --color-tk-variable: var(--tk-variable);
+  --color-tk-number: var(--tk-number);
+  --color-tk-boolean: var(--tk-boolean);
+  --color-tk-tag: var(--tk-tag);
+  --color-tk-bracket: var(--tk-bracket);
+  --color-tk-punctuation: var(--tk-punctuation);
+}
+
+@layer base {
+  :root {
+    --vp-bg: #161616;
+    --vp-fg: #FFF;
+    --vp-text: #adadad;
+    --vp-selection: #FFFFFF25;
+    --vp-muted: #A0A0A0;
+    --vp-subtle: #595959;
+    --vp-border: #282828;
+    --vp-link: #FFC799;
+    --vp-link-hover: #FFCFA8;
+    --vp-error: #FF8080;
+    --vp-input: #1C1C1C;
+    --vp-highlight: #FFC799;
+
+    --tk-comment: #595959;
+    --tk-keyword: #FBADFF;
+    --tk-operator: #FBADFF;
+    --tk-string: #99FFE4;
+    --tk-function: #FFC799;
+    --tk-class: #FFC799;
+    --tk-attribute: #FFC799;
+    --tk-variable: #FFF;
+    --tk-number: #FFC799;
+    --tk-boolean: #FFC799;
+    --tk-tag: #FFC799;
+    --tk-bracket: #A0A0A0;
+    --tk-punctuation: #FBADFF;
+  }
+
+  .light {
+    --vp-bg: #FFFFFF;
+    --vp-fg: #111827;
+    --vp-text: #4B5563;
+    --vp-selection: #E5E7EB;
+    --vp-muted: #6B7280;
+    --vp-subtle: #9CA3AF;
+    --vp-border: #E5E7EB;
+    --vp-link: #2563EB;
+    --vp-link-hover: #1D4ED8;
+    --vp-error: #EF4444;
+    --vp-input: #F3F4F6;
+    --vp-highlight: #2563EB;
+
+    --tk-comment: #6B7280;
+    --tk-keyword: #9333EA;
+    --tk-operator: #9333EA;
+    --tk-string: #059669;
+    --tk-function: #2563EB;
+    --tk-class: #0D9488;
+    --tk-attribute: #2563EB;
+    --tk-variable: #111827;
+    --tk-number: #D97706;
+    --tk-boolean: #D97706;
+    --tk-tag: #E11D48;
+    --tk-bracket: #9CA3AF;
+    --tk-punctuation: #4B5563;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-vp-bg text-vp-fg font-sans antialiased selection:bg-vp-selection selection:text-vp-fg;
+  }
+
+  /* Custom Webkit Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--vp-border);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vp-subtle);
+  }
+
+  /* Firefox Scrollbar Fallback */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vp-border) transparent;
+  }
+
+  /* Mobile scrollbar hiding */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      scrollbar-width: none;
+    }
+
+    /* Except for code blocks */
+    .code-scroll::-webkit-scrollbar {
+      display: block;
+    }
+    .code-scroll {
+      scrollbar-width: thin;
+    }
+  }
+}
