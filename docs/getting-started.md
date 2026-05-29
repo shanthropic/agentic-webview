@@ -60,12 +60,20 @@ You can customize the SDK's behavior using `AgenticWebViewConfig`.
 | Option | Default | Description |
 | :--- | :--- | :--- |
 | `screenshotEnabled` | `true` | Capture screenshots during state capture. |
+| `screenshotQuality` | `75` | JPEG compression quality (0-100). |
+| `screenshotMaxDimension` | `1920` | Max width/height of captured screenshots. |
 | `maxDomElements` | `500` | Limit the number of nodes in the accessibility tree. |
 | `enableAntiDetection` | `true` | Hide WebDriver flags to prevent bot detection. |
 | `viewportExpansion` | `0` | Px to capture outside the viewport (-1 for full page). |
 | `jsEvaluationTimeoutMs`| `5000`| Timeout for JavaScript execution. |
 | `pageSettleTimeoutMs` | `10000`| Max wait time for page to reach `COMPLETE` state. |
+| `pageSettleDebounceMs` | `500` | Debounce delay before declaring page settled. |
 | `elementStabilityTimeoutMs`| `1000`| Wait time for element positions to stabilize before input. |
+| `domMutationThrottleMs`| `300` | Throttle interval for DOM mutation callbacks. |
+| `actionRetryCount` | `2` | Number of retry attempts for failed actions. |
+| `enableDebugLogging` | `false`| Enable detailed SDK logs under `AgenticSDK:*` tags. |
+| `userAgent` | `null` | Custom User-Agent string (uses system default if null). |
+| `includeAttributes` | `null` | Specific HTML attributes to include in the tree serializer. |
 
 ## 5. Security & Domain Control
 
@@ -82,3 +90,5 @@ val config = AgenticWebViewConfig.Builder()
 - **allowedHosts**: If set, the WebView will block any navigation to hosts not in this set.
 - **deniedHosts**: If set, navigation to these hosts will be blocked.
 - **homeUrl**: If a navigation is blocked, the WebView can optionally redirect the user here.
+
+> **Note:** `AgenticWebViewConfig` is used in two places: the `AgenticWebController` constructor (for timeouts, retry counts, and screenshot settings) and the `AgenticWebViewComposable`/`AgenticWebView` (for WebView-level settings like anti-detection and domain control). For consistent behavior, pass the same config to both.

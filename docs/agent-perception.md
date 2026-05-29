@@ -50,6 +50,7 @@ Once your agent decides on an action, execute it using `executeAction()`. The SD
 - `AgentAction.Click(agentId: String)`: Native tap at the element's center.
 - `AgentAction.LongPress(agentId: String, durationMs: Long)`: Long press (default 500ms).
 - `AgentAction.InputText(agentId: String, text: String, clearFirst: Boolean)`: Focuses and types.
+- `AgentAction.SelectOption(agentId: String, value: String)`: Sets a `<select>` element's value directly.
 - `AgentAction.SendKeys(keys: String)`: Simulates keyboard shortcuts (e.g., `"Control+A"`).
 
 #### Advanced Scrolling
@@ -57,9 +58,10 @@ Once your agent decides on an action, execute it using `executeAction()`. The SD
 - `AgentAction.ScrollToPercent(yPercent: Float, agentId: String?)`: Scroll to specific % of page or container.
 - `AgentAction.ScrollToText(text: String, nth: Int)`: Find text and scroll it into view.
 - `AgentAction.ScrollToTop(agentId?)`, `AgentAction.ScrollToBottom(agentId?)`: Jump to extremes.
-- `AgentAction.PreviousPage`, `AgentAction.NextPage`: Scroll by exactly one viewport height.
+- `AgentAction.PreviousPage(agentId: String?)`, `AgentAction.NextPage(agentId: String?)`: Scroll by exactly one viewport height.
 
 #### Dropdowns & Completion
+- `AgentAction.GetDropdownOptions(agentId: String)`: Enumerate all `<option>` elements of a `<select>`.
 - `AgentAction.SelectDropdownOption(agentId, text)`: Select `<option>` by visible text.
 - `AgentAction.Done(text: String, success: Boolean)`: Signal task completion.
 

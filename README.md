@@ -18,6 +18,10 @@ An Android SDK library that gives LLM-powered AI agents real web-browsing capabi
 -   **Hardware-Accelerated Screenshots**: Uses `PixelCopy` to capture high-quality viewport snapshots, including videos and WebGL content.
 -   **Reactive State Management**: Exposes a `StateFlow` for live tracking of DOM mutations and page state changes.
 -   **Jetpack Compose Ready**: Includes a native Compose wrapper for modern Android development.
+-   **Anti-Detection Mode**: Hides WebDriver flags and automation signals to prevent bot detection.
+-   **CSS Selector Generation**: Automatically generates robust CSS selectors for each element.
+-   **Element Stability Detection**: Waits for element positions to stabilize before performing interactions.
+-   **Loading Progress Tracking**: Exposes a `StateFlow<Int>` for real-time page loading progress (0-100).
 
 ## Architecture
 
@@ -71,19 +75,22 @@ controller.state.collect { state ->
 
 val result = controller.executeAction(AgentAction.Navigate("https://google.com"))
 if (result is AgentResult.Success) {
-    val state = controller.captureState()
-    // Send state.accessibilityTree and state.screenshotBase64 to your LLM
+    val stateResult = controller.captureState()
+    if (stateResult is AgentResult.Success) {
+        val state = stateResult.data
+        // Send state.compactTree and state.screenshotBase64 to your LLM
+    }
 }
 ```
 
 ### Agent Actions
-The SDK supports 21 browsing actions:
+The SDK supports 20 browsing actions:
 
 **Navigation:** `Navigate(url)`, `GoBack`, `GoForward`, `Refresh`, `Wait(durationMs)`
 
 **Interaction:** `Click(agentId)`, `LongPress(agentId, durationMs)`, `InputText(agentId, text, clearFirst)`, `SelectOption(agentId, value)`, `SendKeys(keys)`
 
-**Scrolling:** `Scroll(direction, amount)`, `ScrollToPercent(yPercent, agentId?)`, `ScrollToText(text, nth)`, `ScrollToTop(agentId?)`, `ScrollToBottom(agentId?)`, `PreviousPage(agentId?)`, `NextPage(agentId?)`
+**Scrolling:** `Scroll(direction, amount: Float)`, `ScrollToPercent(yPercent, agentId?)`, `ScrollToText(text, nth)`, `ScrollToTop(agentId?)`, `ScrollToBottom(agentId?)`, `PreviousPage(agentId?)`, `NextPage(agentId?)`
 
 **Dropdowns:** `GetDropdownOptions(agentId)`, `SelectDropdownOption(agentId, text)`
 
