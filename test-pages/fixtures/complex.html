@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Agentic browser fixture</title>
+  <style>
+    body { font: 16px sans-serif; margin: 24px; min-height: 1800px; }
+    section { margin-block: 24px; }
+    #scroller { height: 100px; overflow: auto; border: 1px solid; }
+    #scroller > div { height: 400px; }
+    iframe { width: 420px; height: 180px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Checkout fixture</h1>
+    <p>Readable semantic content for an agent.</p>
+    <section>
+      <label>Name <input id="name" autocomplete="name"></label>
+      <label>Password <input id="password" type="password" value="never-expose"></label>
+      <label>Country
+        <select id="country"><option value="ca">Canada</option><option value="us">United States</option></select>
+      </label>
+      <button id="mutate">Add unrelated content</button>
+      <button id="submit">Submit</button>
+      <output id="result"></output>
+    </section>
+    <section data-agentic-sensitive>Private account value: $42,000</section>
+    <section id="shadow-host"></section>
+    <iframe src="frame.html" title="same-origin fixture"></iframe>
+    <div id="scroller"><div><button style="margin-top:320px">Nested scroll target</button></div></div>
+  </main>
+  <script>
+    document.querySelector('#name').addEventListener('input', event => {
+      document.querySelector('#result').value = event.target.value;
+    });
+    document.querySelector('#mutate').addEventListener('click', () => {
+      const paragraph = document.createElement('p');
+      paragraph.textContent = `Mutation ${Date.now()}`;
+      document.querySelector('main').prepend(paragraph);
+    });
+    document.querySelector('#submit').addEventListener('click', () => {
+      document.querySelector('#result').value = 'submitted';
+    });
+    const root = document.querySelector('#shadow-host').attachShadow({ mode: 'open' });
+    root.innerHTML = '<h2>Open shadow root</h2><button id="shadow-action">Shadow action</button>';
+  </script>
+</body>
+</html>

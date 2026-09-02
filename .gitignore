@@ -67,7 +67,5 @@ fabric.properties
 .idea/tasks.xml
 .idea/dictionaries
 
-# Generated assets
-agentic-webview/src/main/assets/agentic_core.min.js
 node_modules/
 dist/

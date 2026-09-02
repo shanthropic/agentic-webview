@@ -15,31 +15,29 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: web-injector/package-lock.json
+          cache-dependency-path: web-runtime/package-lock.json
 
-      - name: Build web-injector
-        working-directory: web-injector
+      - name: Check and build web runtime
+        working-directory: web-runtime
         run: |
           npm ci
-          npm run build
+          npm run check
 
-      - name: Copy web-injector bundle to assets
-        run: |
-          mkdir -p agentic-webview/src/main/assets
-          cp web-injector/dist/agentic_core.min.js agentic-webview/src/main/assets/
+      - name: Validate architecture boundaries
+        run: node scripts/validate-architecture.mjs
 
       - name: Extract version from tag
         id: version
@@ -48,8 +46,24 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Publish to Maven Central
-        run: ./gradlew :agentic-webview:publishAndReleaseToMavenCentral --no-configuration-cache
+      - name: Validate release artifacts
+        run: ./gradlew :browser-api:test :browser-api:jar :agent-tools:test :agent-tools:jar :integrations:jsonrpc:test :integrations:jsonrpc:jar :integrations:koog:check :integrations:koog:jar :browser-webview:testDebugUnitTest :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
+        env:
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
+
+      - name: Enforce artifact-size budgets
+        run: node scripts/check-artifact-sizes.mjs --require-built
+
+      - name: Publish all SDK modules to Maven Central
+        run: >-
+          ./gradlew
+          :browser-api:publishAndReleaseToMavenCentral
+          :browser-webview:publishAndReleaseToMavenCentral
+          :browser-compose:publishAndReleaseToMavenCentral
+          :agent-tools:publishAndReleaseToMavenCentral
+          :integrations:koog:publishAndReleaseToMavenCentral
+          :integrations:jsonrpc:publishAndReleaseToMavenCentral
+          --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -58,16 +72,21 @@ jobs:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
       - name: Build demo app APK (debug signed)
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :samples:android:assembleDebug
         env:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
       - name: Rename APK with version
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
+        run: mv samples/android/build/outputs/apk/debug/android-debug.apk samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
+
+      - name: Create demo checksum
+        run: sha256sum samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk > samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk.sha256
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           tag_name: ${{ github.ref_name }}
-          files: app/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
+          files: |
+            samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
+            samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk.sha256

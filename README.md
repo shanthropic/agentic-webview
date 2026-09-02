@@ -1,118 +1,88 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg" />
-    <img src="logo.svg" width="128" height="128" alt="Agentic WebView Logo" />
-  </picture>
-</p>
+# Agentic WebView
 
-# Agentic WebView SDK
+Agentic WebView is a typed, framework-neutral browser SDK for Android. It turns a `WebView` into an agent-controlled browser session with semantic observations, document-scoped element references, verified commands, navigation policy enforcement, screenshots, and structured failures.
 
-An Android SDK library that gives LLM-powered AI agents real web-browsing capabilities inside mobile apps. The SDK bridges the gap between large language models and Android WebViews by injecting scripts to parse and simplify the DOM into an accessibility tree, capturing viewport screenshots for vision models, and translating LLM tool calls into native Android touch interactions.
+This repository contains the breaking post-prototype architecture. There is intentionally no compatibility layer for the former controller API.
 
-## Features
+## Modules
 
--   **Simplified Accessibility Tree**: Converts complex HTML into a clean, LLM-friendly JSON tree of interactive elements with **stable identifiers** that persist across mutations.
--   **Shadow DOM & Iframe Support**: Recursively traverses Shadow DOM and same-origin iframes.
--   **Occlusion Detection**: Automatically identifies if elements are visible or hidden behind overlays/modals.
--   **Framework-Safe Interactions**: Simulated inputs that work reliably with React, Vue, and Angular event systems.
--   **Hardware-Accelerated Screenshots**: Uses `PixelCopy` to capture high-quality viewport snapshots, including videos and WebGL content.
--   **Reactive State Management**: Exposes a `StateFlow` for live tracking of DOM mutations and page state changes.
--   **Jetpack Compose Ready**: Includes a native Compose wrapper for modern Android development.
--   **Anti-Detection Mode**: Hides WebDriver flags and automation signals to prevent bot detection.
--   **CSS Selector Generation**: Automatically generates robust CSS selectors for each element.
--   **Element Stability Detection**: Waits for element positions to stabilize before performing interactions.
--   **Loading Progress Tracking**: Exposes a `StateFlow<Int>` for real-time page loading progress (0-100).
+| Module | Purpose |
+| --- | --- |
+| `browser-api` | Pure Kotlin contracts, configuration, observations, commands, errors, events, and diagnostics |
+| `browser-webview` | Android WebView host, runtime gateway, lifecycle, policy hooks, and screenshots |
+| `browser-compose` | Optional Compose view and lifecycle binding |
+| `agent-tools` | Framework-neutral JSON Schema tool definitions and dispatcher |
+| `integrations/koog` | Optional Koog `ToolSet` adapter |
+| `integrations/jsonrpc` | Transport-neutral JSON-RPC 2.0 adapter |
+| `web-runtime` | Strict TypeScript page runtime bundled into the Android library |
+| `samples/android` | Direct SDK and generic-agent-tool example |
 
-## Architecture
+## Install
 
-The SDK is built in two layers:
-
-1.  **TypeScript DOM Engine (`web-injector/`)**: A single IIFE bundle injected into pages that handles DOM parsing, interactivity detection, coordinate math, and framework-safe input simulation. Exposes `window.__AgenticInternal`.
-2.  **Kotlin SDK Core (`agentic-webview/`)**: The Android library containing the custom WebView, `AgenticWebController` orchestrator, `JsBridge` (`@JavascriptInterface`), `ScreenshotCapture`, and Compose integration.
-
-Communication flows via `evaluateJavascript` (Kotlin → JS) and `@JavascriptInterface` callbacks (JS → Kotlin), secured by a per-navigation session UUID token.
-
-## Setup
-
-### 1. Requirements
--   Android API 28+ (Android 9.0)
--   Kotlin 2.x
--   Compose (optional)
-
-### 2. Dependency
-Add the following to your module's `build.gradle.kts`:
+Use only the modules your app needs. Replace `VERSION` with a published development version.
 
 ```kotlin
 dependencies {
-    implementation("dev.shantoislam:agentic-webview:0.2.1")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-compose:VERSION") // optional
+    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION") // optional
 }
 ```
 
-> **Note:** Make sure `mavenCentral()` is in your `dependencyResolutionManagement.repositories` block in `settings.gradle.kts`.
-
-The library includes Jetpack Compose dependencies. Use `AgenticWebViewComposable` for Compose integration, or `AgenticWebView` directly for View-based layouts.
-
-## Usage
-
-### Jetpack Compose Integration
+## Compose quick start
 
 ```kotlin
-val controller = remember { AgenticWebController() }
+@Composable
+fun Browser() {
+    val host = rememberAgenticBrowserHost(
+        AgenticBrowserConfiguration(
+            navigation = NavigationPolicy(
+                allowedHosts = setOf(HostRule.DomainAndSubdomains("example.com")),
+            ),
+        ),
+    )
+    val scope = rememberCoroutineScope()
 
-AgenticWebViewComposable(
-    controller = controller,
-    modifier = Modifier.fillMaxSize(),
-    config = AgenticWebViewConfig(enableDebugLogging = true)
-)
-
-// In a Coroutine scope
-controller.state.collect { state ->
-    state?.let { 
-        // React to live DOM updates or page settlement
-        println("New state: ${it.url}")
+    LaunchedEffect(host) {
+        when (val result = host.session.navigate(NavigationRequest("https://example.com"))) {
+            is BrowserResult.Success -> println(result.value)
+            is BrowserResult.Failure -> println(result.error)
+        }
     }
-}
 
-val result = controller.executeAction(AgentAction.Navigate("https://google.com"))
-if (result is AgentResult.Success) {
-    val stateResult = controller.captureState()
-    if (stateResult is AgentResult.Success) {
-        val state = stateResult.data
-        // Send state.compactTree and state.screenshotBase64 to your LLM
-    }
+    AgenticBrowserView(host, Modifier.fillMaxSize())
 }
 ```
 
-### Agent Actions
-The SDK supports 20 browsing actions:
+For an agent framework, construct `StandardBrowserTools(host.session)`. Its standard profile exposes ten stable tools without giving an adapter access to `WebView` internals.
 
-**Navigation:** `Navigate(url)`, `GoBack`, `GoForward`, `Refresh`, `Wait(durationMs)`
+## Core guarantees
 
-**Interaction:** `Click(agentId)`, `LongPress(agentId, durationMs)`, `InputText(agentId, text, clearFirst)`, `SelectOption(agentId, value)`, `SendKeys(keys)`
+- A session owns one WebView, one configuration, and one deterministic lifecycle.
+- All page communication uses correlated, versioned protocol envelopes with time, size, and pending-request limits.
+- Element references are scoped to a document and frame; detached or replaced elements fail explicitly.
+- Same-origin nested frames and open Shadow DOM are observed and acted on; cross-origin limits are reported as capabilities.
+- Page observations are untrusted input. Password and explicitly sensitive content is redacted.
+- Privileged WebView behavior is denied or delegated through host policy hooks.
+- The browser core has no LLM or agent-framework dependency.
 
-**Scrolling:** `Scroll(direction, amount: Float)`, `ScrollToPercent(yPercent, agentId?)`, `ScrollToText(text, nth)`, `ScrollToTop(agentId?)`, `ScrollToBottom(agentId?)`, `PreviousPage(agentId?)`, `NextPage(agentId?)`
-
-**Dropdowns:** `GetDropdownOptions(agentId)`, `SelectDropdownOption(agentId, text)`
-
-**Completion:** `Done(text, success)`
-
-## Testing
-
-The SDK includes a comprehensive instrumented test suite using `MockWebServer`.
+## Development checks
 
 ```bash
-./gradlew :agentic-webview:connectedAndroidTest
+cd web-runtime
+npm ci
+npm run check
+cd ..
+node scripts/validate-architecture.mjs
+node scripts/validate-doc-links.mjs
+./gradlew check :browser-api:jar :agent-tools:jar :integrations:jsonrpc:jar :integrations:koog:jar :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
+node scripts/check-artifact-sizes.mjs --require-built
 ```
 
-## Documentation
+The Gradle build always rebuilds `web-runtime/dist/agentic_runtime.min.js`; never edit the bundle directly.
 
-For comprehensive guides and API references, see the following:
-
--   [Getting Started](docs/getting-started.md): Installation and basic setup (Views and Compose).
--   [Agent Perception & Actions](docs/agent-perception.md): How to capture state and execute actions.
--   [Best Practices](docs/best-practices.md): Stability, error handling, and debugging.
--   `AGENTS.md`: Machine-readable instructions and context for AI coding agents.
+See [Getting started](docs/getting-started.md), [Architecture](docs/architecture.md), [Security](docs/security.md), and the [full refactoring blueprint](docs/architecture-refactoring-plan.md).
 
 ## License
 
-This project is licensed under the Apache License 2.0.
+Apache License 2.0. See [LICENSE](LICENSE).

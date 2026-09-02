@@ -1,0 +1,15 @@
+{
+  "protocolVersion": 1,
+  "bridgeToken": "bridge-token-12345678901234567890123456789012",
+  "sessionId": "session-1",
+  "documentId": "document-1",
+  "requestId": "request-1",
+  "status": "error",
+  "error": {
+    "code": "NOT_READY",
+    "message": "Runtime is not ready",
+    "details": {
+      "phase": "initializing"
+    }
+  }
+}
