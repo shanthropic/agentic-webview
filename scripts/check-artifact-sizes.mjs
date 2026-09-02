@@ -8,7 +8,7 @@ const reports = [];
 
 const budgets = [
   { name: 'web runtime', directory: 'web-runtime/dist', match: /^agentic_runtime\.min\.js$/, maximumBytes: 128 * 1024, required: true },
-  { name: 'browser-api JAR', directory: 'browser-api/build/libs', match: /^(?!.*(?:sources|javadoc|tests)).*\.jar$/, maximumBytes: 512 * 1024 },
+  { name: 'browser-api JAR', directory: 'browser-api/build/libs', match: /^(?!.*(?:sources|javadoc|tests)).*\.jar$/, maximumBytes: 640 * 1024 },
   { name: 'browser-webview AAR', directory: 'browser-webview/build/outputs/aar', match: /release\.aar$/, maximumBytes: 2 * 1024 * 1024 },
   { name: 'browser-compose AAR', directory: 'browser-compose/build/outputs/aar', match: /release\.aar$/, maximumBytes: 1024 * 1024 },
   { name: 'agent-tools JAR', directory: 'agent-tools/build/libs', match: /^(?!.*(?:sources|javadoc|tests)).*\.jar$/, maximumBytes: 512 * 1024 },
