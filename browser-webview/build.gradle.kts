@@ -33,8 +33,8 @@ extensions.configure<LibraryExtension> {
     }
 
     sourceSets {
-        getByName("main").assets.directories.add(file("${rootProject.projectDir}/web-runtime/dist"))
-        getByName("test").resources.directories.add(file("${rootProject.projectDir}/protocol-fixtures"))
+        getByName("main").assets.directories.add("${rootProject.projectDir}/web-runtime/dist")
+        getByName("test").resources.directories.add("${rootProject.projectDir}/protocol-fixtures")
     }
 }
 
