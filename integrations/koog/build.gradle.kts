@@ -11,6 +11,11 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
 dependencies {
     api(project(":agent-tools"))
     api(libs.koog.agents)
