@@ -1,4 +1,369 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíïŸ6N‹Z–‹­¦ëeŠw¬ÕÁ…­…”‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹Ñ½½±Ì()¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹•¹Ñ¥	É½İÍ•ÉM•ÍÍ¥½¸)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹	É½İÍ•É½µµ…¹)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹	É½İÍ•ÉÉÉ½È)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹	É½İÍ•É=‰Í•ÉÙ…Ñ¥½¸)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹	É½İÍ•ÉI•ÍÕ±Ğ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹½µµ…¹‘I••¥ÁĞ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹±•µ•¹ÑI•˜)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹!¥ÍÑ½Éå9…Ù¥…Ñ¥½¹I•ÅÕ•ÍĞ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹-•å¡½É)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹9…Ù¥…Ñ¥½¹=Á•É…Ñ¥½¸)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹9…Ù¥…Ñ¥½¹I••¥ÁĞ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹9…Ù¥…Ñ¥½¹I•ÅÕ•ÍĞ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹=‰Í•ÉÙ…Ñ¥½¹=ÁÑ¥½¹Ì)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹MÉ½±±±¥¹µ•¹Ğ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹MÉ½±±•±Ñ„)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹MÉ½±±Q…É•Ğ)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹M•±•Ñ=ÁÑ¥½¹5…Ñ¡•È)¥µÁ½ÉĞ‘•Ø¹Í¡…¹Ñ½¥Í±…´¹…•¹Ñ¥İ•‰Ù¥•Ü¹…Á¤¹Q•áÑ%¹ÁÕÑ5½‘”)¥µÁ½ÉĞ©…Ù„¹ÕÑ¥°¹	…Í”ØĞ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹-M•É¥…±¥é•È)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹M•É¥…±¥é…Ñ¥½¹á•ÁÑ¥½¸)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹)Í½¸)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹)Í½¹±•µ•¹Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹)Í½¹=‰©•Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹)Í½¹AÉ¥µ¥Ñ¥Ù”)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹‰½½±•…¹=É9Õ±°)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹‰Õ¥±‘)Í½¹ÉÉ…ä)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹‰Õ¥±‘)Í½¹=‰©•Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹½¹Ñ•¹Ñ=É9Õ±°)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹‘•½‘•É½µ)Í½¹±•µ•¹Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹‘½Õ‰±•=É9Õ±°)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹•¹½‘•Q½)Í½¹±•µ•¹Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹¥¹Ñ=É9Õ±°)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹©Í½¹=‰©•Ğ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹©Í½¹AÉ¥µ¥Ñ¥Ù”)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹ÁÕĞ)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹ÁÕÑ)Í½¹ÉÉ…ä)¥µÁ½ÉĞ­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹©Í½¸¹ÁÕÑ)Í½¹=‰©•Ğ()•¹Õ´±…ÍÌ	É½İÍ•ÉQ½½±AÉ½™¥±”ì(€€€5%9%50°(€€€MQ9I°(€€€Y9°)ô()=ÁÑ%¸¡­½Ñ±¥¹à¹Í•É¥…±¥é…Ñ¥½¸¹áÁ•É¥µ•¹Ñ…±M•É¥…±¥é…Ñ¥½¹Á¤èé±…ÍÌ¤)±…ÍÌMÑ…¹‘…É‘	É½İÍ•ÉQ½½±Ì (€€€ÁÉ¥Ù…Ñ”Ù…°Í•ÍÍ¥½¸è•¹Ñ¥	É½İÍ•ÉM•ÍÍ¥½¸°(€€€ÁÉ½™¥±”è	É½İÍ•ÉQ½½±AÉ½™¥±”€ô	É½İÍ•ÉQ½½±AÉ½™¥±”¹MQ9I°(€€€ÁÉ¥Ù…Ñ”Ù…°©Í½¸è)Í½¸€ô)Í½¸ì(€€€€€€€¥¹½É•U¹­¹½İ¹-•åÌ€ô™…±Í”(€€€€€€€•áÁ±¥¥Ñ9Õ±±Ì€ô™…±Í”(€€€€€€€•¹½‘••™…Õ±ÑÌ€ôÑÉÕ”(€€€€€€€±…ÍÍ¥ÍÉ¥µ¥¹…Ñ½È€ô€‰ÑåÁ”ˆ(€€€ô°(¤€è•¹ÑQ½½±¥ÍÁ…Ñ¡•Èì((€€€½Ù•ÉÉ¥‘”Ù…°‘•™¥¹¥Ñ¥½¹Ìè1¥ÍĞñ•¹ÑQ½½±•™¥¹¥Ñ¥½¸ø€ô11}%9%Q%=9L¹™¥±Ñ•Èì‘•™¥¹¥Ñ¥½¸€´ø(€€€€€€€‘•™¥¹¥Ñ¥½¸¹¹…µ”¥¸İ¡•¸€¡ÁÉ½™¥±”¤ì(€€€€€€€€€€€	É½İÍ•ÉQ½½±AÉ½™¥±”¹5%9%50€´ø5%9%51}Q==1}95L(€€€€€€€€€€€	É½İÍ•ÉQ½½±AÉ½™¥±”¹MQ9I€´øMQ9I}Q==1}95L(€€€€€€€€€€€	É½İÍ•ÉQ½½±AÉ½™¥±”¹Y9€´øY9}Q==1}95L(€€€€€€€ô(€€€ô((€€€½Ù•ÉÉ¥‘”ÍÕÍÁ•¹™Õ¸¥¹Ù½­”¡¹…µ”èMÑÉ¥¹œ°…ÉÕµ•¹ÑÌè)Í½¹=‰©•Ğ¤è•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğì(€€€€€€€¥˜€¡‘•™¥¹¥Ñ¥½¹Ì¹¹½¹”ì¥Ğ¹¹…µ”€ôô¹…µ”ô¤ì(€€€€€€€€€€€É•ÑÕÉ¸•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğ (€€€€€€€€€€€€€€€ÍÕ•ÍÌ€ô™…±Í”°(€€€€€€€€€€€€€€€½ÕÑÁÕĞ€ô•ÉÉ½É=ÕÑÁÕĞ ‰Q==1}9=Q}=U9ˆ°€‰U¹­¹½İ¸½ÈÕ¹…Ù…¥±…‰±”‰É½İÍ•ÈÑ½½°è€‘¹…µ”ˆ¤°(€€€€€€€€€€€€¤(€€€€€€€ô(€€€€€€€É•ÑÕÉ¸ÑÉäì(€€€€€€€€€€€İ¡•¸€¡¹…µ”¤ì(€€€€€€€€€€€€€€€=	MIY€´ø¥¹Ù½­•=‰Í•ÉÙ”¡…ÉÕµ•¹ÑÌ¤(€€€€€€€€€€€€€€€9Y%Q€´ø•¹½‘•I•ÍÕ±Ğ (€€€€€€€€€€€€€€€€€€€Í•ÍÍ¥½¸¹¹…Ù¥…Ñ”¡9…Ù¥…Ñ¥½¹I•ÅÕ•ÍĞ¡…ÉÕµ•¹ÑÌ¹É•ÅÕ¥É•‘MÑÉ¥¹œ ‰ÕÉ°ˆ¤¤¤°(€€€€€€€€€€€€€€€€€€€9…Ù¥…Ñ¥½¹I••¥ÁĞ¹Í•É¥…±¥é•È ¤°(€€€€€€€€€€€€€€€€€€€ÍÕµµ…Éä€ô€‰9…Ù¥…Ñ¥½¸½µÁ±•Ñ•ˆ°(€€€€€€€€€€€€€€€€€€€É•½µµ•¹‘=‰Í•ÉÙ…Ñ¥½¸€ôÑÉÕ”°(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€€€€€1%,€´ø•¹½‘•½µµ…¹¡	É½İÍ•É½µµ…¹¹±¥¬¡…ÉÕµ•¹ÑÌ¹É•ÅÕ¥É•‘±•µ•¹ÑI•˜ ‰Ñ…É•Ğˆ¤¤¤(€€€€€€€€€€€€€€€QeA}QaP€´ø¥¹Ù½­•QåÁ•Q•áĞ¡…ÉÕµ•¹ÑÌ¤(€€€€€€€€€€€€€€€M1Q}=AQ%=8€´ø¥¹Ù½­•M•±•Ñ=ÁÑ¥½¸¡…ÉÕµ•¹ÑÌ¤(€€€€€€€€€€€€€€€MI=10€´ø¥¹Ù½­•MÉ½±°¡…ÉÕµ•¹ÑÌ¤(€€€€€€€€€€€€€€€AIMM}-eL€´ø¥¹Ù½­•AÉ•ÍÍ-•åÌ¡…ÉÕµ•¹ÑÌ¤(€€€€€€€€€€€€€€€=}	,€´ø¥¹Ù½­•!¥ÍÑ½Éä¡9…Ù¥…Ñ¥½¹=Á•É…Ñ¥½¸¹	,¤(€€€€€€€€€€€€€€€=}=I]I€´ø¥¹Ù½­•!¥ÍÑ½Éä¡9…Ù¥…Ñ¥½¹=Á•É…Ñ¥½¸¹=I]I¤(€€€€€€€€€€€€€€€I1=€´ø¥¹Ù½­•!¥ÍÑ½Éä¡9…Ù¥…Ñ¥½¹=Á•É…Ñ¥½¸¹I1=¤(€€€€€€€€€€€€€€€1=9}AIML€´ø•¹½‘•½µµ…¹ (€€€€€€€€€€€€€€€€€€€	É½İÍ•É½µµ…¹¹1½¹AÉ•ÍÌ (€€€€€€€€€€€€€€€€€€€€€€€Ñ…É•Ğ€ô…ÉÕµ•¹ÑÌ¹É•ÅÕ¥É•‘±•µ•¹ÑI•˜ ‰Ñ…É•Ğˆ¤°(€€€€€€€€€€€€€€€€€€€€€€€‘ÕÉ…Ñ¥½¹5Ì€ô…ÉÕµ•¹ÑÌ¹½ÁÑ¥½¹…±1½¹œ ‰‘ÕÉ…Ñ¥½¹}µÌˆ¤€üè€ÔÀÀ°(€€€€€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€€€€€MI=11}%9Q=}Y%\€´ø•¹½‘•½µµ…¹ (€€€€€€€€€€€€€€€€€€€	É½İÍ•É½µµ…¹¹MÉ½±±%¹Ñ½Y¥•Ü (€€€€€€€€€€€€€€€€€€€€€€€Ñ…É•Ğ€ô…ÉÕµ•¹ÑÌ¹É•ÅÕ¥É•‘±•µ•¹ÑI•˜ ‰Ñ…É•Ğˆ¤°(€€€€€€€€€€€€€€€€€€€€€€€…±¥¹µ•¹Ğ€ô…ÉÕµ•¹ÑÌ¹½ÁÑ¥½¹…±¹Õ´ ‰…±¥¹µ•¹Ğˆ°MÉ½±±±¥¹µ•¹Ğ¹•¹ÑÉ¥•Ì¤(€€€€€€€€€€€€€€€€€€€€€€€€€€€€üèMÉ½±±±¥¹µ•¹Ğ¹9QH°(€€€€€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€€€€€•±Í”€´ø•ÉÉ½È ‰Q½½°‘•™¥¹¥Ñ¥½¸…¹‘¥ÍÁ…Ñ Ñ…‰±”…É”¥¹½¹Í¥ÍÑ•¹Ğˆ¤(€€€€€€€€€€€ô(€€€€€€€ô…Ñ €¡•ÉÉ½Èè%¹Ù…±¥‘Q½½±ÉÕµ•¹ÑÌ¤ì(€€€€€€€€€€€•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğ¡™…±Í”°•ÉÉ½É=ÕÑÁÕĞ ‰%9Y1%}IU59QLˆ°•ÉÉ½È¹µ•ÍÍ…”€üè€‰%¹Ù…±¥Ñ½½°…ÉÕµ•¹ÑÌˆ¤¤(€€€€€€€ô…Ñ €¡•ÉÉ½ÈèM•É¥…±¥é…Ñ¥½¹á•ÁÑ¥½¸¤ì(€€€€€€€€€€€•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğ¡™…±Í”°•ÉÉ½É=ÕÑÁÕĞ ‰%9Y1%}IU59QLˆ°•ÉÉ½È¹µ•ÍÍ…”€üè€‰%¹Ù…±¥Ñ½½°…ÉÕµ•¹ÑÌˆ¤¤(€€€€€€€ô…Ñ €¡•ÉÉ½Èè%±±•…±ÉÕµ•¹Ñá•ÁÑ¥½¸¤ì(€€€€€€€€€€€•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğ¡™…±Í”°•ÉÉ½É=ÕÑÁÕĞ ‰%9Y1%}IU59QLˆ°•ÉÉ½È¹µ•ÍÍ…”€üè€‰%¹Ù…±¥Ñ½½°…ÉÕµ•¹ÑÌˆ¤¤(€€€€€€€ô(€€€ô((€€€ÁÉ¥Ù…Ñ”ÍÕÍÁ•¹™Õ¸¥¹Ù½­•=‰Í•ÉÙ”¡…ÉÕµ•¹ÑÌè)Í½¹=‰©•Ğ¤è•¹ÑQ½½±%¹Ù½…Ñ¥½¹I•ÍÕ±Ğì(€€€€€€€Ù…°É•ÍÕ±Ğ€ôÍ•ÍÍ¥½¸¹½‰Í•ÉÙ” (€€€€€€€€€€€=‰Í•ÉÙ…Ñ¥½¹=ÁÑ¥½¹Ì (€€€€€€€€€€€€€€€¥¹±Õ‘•MÉ••¹Í¡½Ğ€ô…ÉÕµ•¹ÑÌ¹½ÁÑ¥½¹…±	½½±•…¸ ‰¥¹±Õ‘•}ÍÉ••¹Í¡½Ğˆ¤€üè™…±Í”°(€€€€€€€€€€€€€€€¥¹±Õ‘•=™™ÍÉ••¹½¹Ñ•¹Ğ€ô…ÉÕµ•¹ÑÌ¹½ÁÑ¥½¹…±	½½±•…¸ ‰¥¹±Õ‘•}½™™ÍÉ••¹}½¹Ñ•¹Ğˆ¤€üè™…±Í”°(€€€€€€€€€€€€€€€¥¹±Õ‘•½µÁ…ÑQ•áĞ€ô…ÉÕµ•¹ÑÌ¹½ÁÑ¥½¹…±	½½±•…¸ ‰¥¹±Õ‘•}½µÁ…Ñ}Ñ•áĞˆ¤€üèÑÉÕ”°(€€€€€€€€€€€€¤°(€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸•¹½‘•I•ÍÕ±Ğ (€€€€€€€€€€€É•ÍÕ±Ğ°(€€€€€€€€€€€	É½İÍ•É=‰Í•ÉÙ…Ñ¥½¸¹Í•É¥…±¥é•È ¤°(€€€ƒ~|ÚÚ$z{-®éÜj×t {
+package dev.shantoislam.agenticwebview.tools
+
+import dev.shantoislam.agenticwebview.api.AgenticBrowserSession
+import dev.shantoislam.agenticwebview.api.BrowserCommand
+import dev.shantoislam.agenticwebview.api.BrowserError
+import dev.shantoislam.agenticwebview.api.BrowserObservation
+import dev.shantoislam.agenticwebview.api.BrowserResult
+import dev.shantoislam.agenticwebview.api.CommandReceipt
+import dev.shantoislam.agenticwebview.api.ElementRef
+import dev.shantoislam.agenticwebview.api.HistoryNavigationRequest
+import dev.shantoislam.agenticwebview.api.KeyChord
+import dev.shantoislam.agenticwebview.api.NavigationOperation
+import dev.shantoislam.agenticwebview.api.NavigationReceipt
+import dev.shantoislam.agenticwebview.api.NavigationRequest
+import dev.shantoislam.agenticwebview.api.ObservationOptions
+import dev.shantoislam.agenticwebview.api.ScrollAlignment
+import dev.shantoislam.agenticwebview.api.ScrollDelta
+import dev.shantoislam.agenticwebview.api.ScrollTarget
+import dev.shantoislam.agenticwebview.api.SelectOptionMatcher
+import dev.shantoislam.agenticwebview.api.TextInputMode
+import java.util.Base64
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
+
+enum class BrowserToolProfile {
+    MINIMAL,
+    STANDARD,
+    ADVANCED,
+}
+
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+class StandardBrowserTools(
+    private val session: AgenticBrowserSession,
+    profile: BrowserToolProfile = BrowserToolProfile.STANDARD,
+    private val json: Json = Json {
+        ignoreUnknownKeys = false
+        explicitNulls = false
+        encodeDefaults = true
+        classDiscriminator = "type"
+    },
+) : AgentToolDispatcher {
+
+    override val definitions: List<AgentToolDefinition> = ALL_DEFINITIONS.filter { definition ->
+        definition.name in when (profile) {
+            BrowserToolProfile.MINIMAL -> MINIMAL_TOOL_NAMES
+            BrowserToolProfile.STANDARD -> STANDARD_TOOL_NAMES
+            BrowserToolProfile.ADVANCED -> ADVANCED_TOOL_NAMES
+        }
+    }
+
+    override suspend fun invoke(name: String, arguments: JsonObject): AgentToolInvocationResult {
+        if (definitions.none { it.name == name }) {
+            return AgentToolInvocationResult(
+                success = false,
+                output = errorOutput("TOOL_NOT_FOUND", "Unknown or unavailable browser tool: $name"),
+            )
+        }
+        return try {
+            when (name) {
+                OBSERVE -> invokeObserve(arguments)
+                NAVIGATE -> encodeResult(
+                    session.navigate(NavigationRequest(arguments.requiredString("url"))),
+                    NavigationReceipt.serializer(),
+                    summary = "Navigation completed",
+                    recommendObservation = true,
+                )
+                CLICK -> encodeCommand(BrowserCommand.Click(arguments.requiredElementRef("target")))
+                TYPE_TEXT -> invokeTypeText(arguments)
+                SELECT_OPTION -> invokeSelectOption(arguments)
+                SCROLL -> invokeScroll(arguments)
+                PRESS_KEYS -> invokePressKeys(arguments)
+                GO_BACK -> invokeHistory(NavigationOperation.BACK)
+                GO_FORWARD -> invokeHistory(NavigationOperation.FORWARD)
+                RELOAD -> invokeHistory(NavigationOperation.RELOAD)
+                LONG_PRESS -> encodeCommand(
+                    BrowserCommand.LongPress(
+                        target = arguments.requiredElementRef("target"),
+                        durationMs = arguments.optionalLong("duration_ms") ?: 500,
+                    ),
+                )
+                SCROLL_INTO_VIEW -> encodeCommand(
+                    BrowserCommand.ScrollIntoView(
+                        target = arguments.requiredElementRef("target"),
+                        alignment = arguments.optionalEnum("alignment", ScrollAlignment.entries)
+                            ?: ScrollAlignment.CENTER,
+                    ),
+                )
+                else -> error("Tool definition and dispatch table are inconsistent")
+            }
+        } catch (error: InvalidToolArguments) {
+            AgentToolInvocationResult(false, errorOutput("INVALID_ARGUMENTS", error.message ?: "Invalid tool arguments"))
+        } catch (error: SerializationException) {
+            AgentToolInvocationResult(false, errorOutput("INVALID_ARGUMENTS", error.message ?: "Invalid tool arguments"))
+        } catch (error: IllegalArgumentException) {
+            AgentToolInvocationResult(false, errorOutput("INVALID_ARGUMENTS", error.message ?: "Invalid tool arguments"))
+        }
+    }
+
+    private suspend fun invokeObserve(arguments: JsonObject): AgentToolInvocationResult {
+        val result = session.observe(
+            ObservationOptions(
+                includeScreenshot = arguments.optionalBoolean("include_screenshot") ?: false,
+                includeOffscreenContent = arguments.optionalBoolean("include_offscreen_content") ?: false,
+                includeCompactText = arguments.optionalBoolean("include_compact_text") ?: true,
+            ),
+        )
+        return encodeResult(
+            result,
+            BrowserObservation.serializer(),
+            summary = "Browser observation captured",
+            recommendObservation = false,
+            valueEncoder = ::encodeObservation,
+        )
+    }
+
+    private fun encodeObservation(observation: BrowserObservation): JsonElement {
+        val screenshot = observation.screenshot
+        val encoded = json.encodeToJsonElement(
+            BrowserObservation.serializer(),
+            if (screenshot == null) observation else observation.copy(screenshot = null),
+        ).jsonObject
+        if (screenshot == null) return encoded
+        return JsonObject(
+            encoded + ("screenshot" to buildJsonObject {
+                put("dataBase64", Base64.getEncoder().encodeToString(screenshot.bytes))
+                put("mimeType", screenshot.mimeType)
+                put("widthPx", screenshot.widthPx)
+                put("heightPx", screenshot.heightPx)
+            }),
+        )
+    }
+
+    private suspend fun invokeTypeText(arguments: JsonObject): AgentToolInvocationResult {
+        val mode = arguments.optionalEnum("mode", TextInputMode.entries) ?: TextInputMode.REPLACE_ALL
+        return encodeCommand(
+            BrowserCommand.TypeText(
+                target = arguments.requiredElementRef("target"),
+                text = arguments.requiredString("text", allowEmpty = true),
+                mode = mode,
+            ),
+        )
+    }
+
+    private suspend fun invokeSelectOption(arguments: JsonObject): AgentToolInvocationResult {
+        val matchers = listOfNotNull(
+            arguments.optionalString("value")?.let(SelectOptionMatcher::Value),
+            arguments.optionalString("label")?.let(SelectOptionMatcher::Label),
+            arguments.optionalInt("index")?.let(SelectOptionMatcher::Index),
+        )
+        if (matchers.size != 1) {
+            throw InvalidToolArguments("Exactly one of 'value', 'label', or 'index' is required")
+        }
+        return encodeCommand(
+            BrowserCommand.SelectOption(
+                target = arguments.requiredElementRef("target"),
+                option = matchers.single(),
+            ),
+        )
+    }
+
+    private suspend fun invokeScroll(arguments: JsonObject): AgentToolInvocationResult {
+        val x = arguments.optionalDouble("delta_x_css_px") ?: 0.0
+        val y = arguments.optionalDouble("delta_y_css_px") ?: 0.0
+        if (x == 0.0 && y == 0.0) {
+            throw InvalidToolArguments("At least one scroll delta must be non-zero")
+        }
+        val target = arguments["target"]?.let { ScrollTarget.Element(json.decodeFromJsonElement(it)) }
+            ?: ScrollTarget.Page
+        return encodeCommand(BrowserCommand.Scroll(target, ScrollDelta(x, y)))
+    }
+
+    private suspend fun invokePressKeys(arguments: JsonObject): AgentToolInvocationResult = encodeCommand(
+        BrowserCommand.PressKeys(
+            KeyChord(
+                key = arguments.requiredString("key"),
+                control = arguments.optionalBoolean("control") ?: false,
+                alt = arguments.optionalBoolean("alt") ?: false,
+                shift = arguments.optionalBoolean("shift") ?: false,
+                meta = arguments.optionalBoolean("meta") ?: false,
+            ),
+        ),
+    )
+
+    private suspend fun invokeHistory(operation: NavigationOperation): AgentToolInvocationResult = encodeResult(
+        session.navigateHistory(HistoryNavigationRequest(operation)),
+        NavigationReceipt.serializer(),
+        summary = "History navigation completed",
+        recommendObservation = true,
+    )
+
+    private suspend fun encodeCommand(command: BrowserCommand): AgentToolInvocationResult = encodeResult(
+        session.execute(command),
+        CommandReceipt.serializer(),
+        summary = "Browser action completed",
+        recommendObservation = true,
+    )
+
+    private fun <T> encodeResult(
+        result: BrowserResult<T>,
+        serializer: KSerializer<T>,
+        summary: String,
+        recommendObservation: Boolean,
+        valueEncoder: ((T) -> JsonElement)? = null,
+    ): AgentToolInvocationResult {
+        val currentState = session.state.value
+        return when (result) {
+            is BrowserResult.Success -> AgentToolInvocationResult(
+                success = true,
+                output = buildJsonObject {
+                    put("status", "success")
+                    put("summary", summary)
+                    put("value", valueEncoder?.invoke(result.value) ?: json.encodeToJsonElement(serializer, result.value))
+                    put("recommendObservation", recommendObservation)
+                    putJsonObject("context") {
+                        currentState.documentId?.let { put("documentId", it.value) }
+                        put("revision", currentState.revision.value)
+                    }
+                    put("diagnostics", json.encodeToJsonElement(result.diagnostics))
+                },
+            )
+            is BrowserResult.Failure -> {
+                val encodedError = json.encodeToJsonElement(BrowserError.serializer(), result.error)
+                val code = (encodedError as? JsonObject)?.get("type")?.jsonPrimitive?.contentOrNull
+                    ?.uppercase()
+                    ?: "BROWSER_ERROR"
+                AgentToolInvocationResult(
+                    success = false,
+                    output = buildJsonObject {
+                        put("status", "error")
+                        put("code", code)
+                        put("summary", result.error.message)
+                        put("error", encodedError)
+                        put("recommendObservation", shouldRecommendObservation(result.error))
+                        putJsonObject("context") {
+                            currentState.documentId?.let { put("documentId", it.value) }
+                            put("revision", currentState.revision.value)
+                        }
+                        put("diagnostics", json.encodeToJsonElement(result.diagnostics))
+                    },
+                )
+            }
+        }
+    }
+
+    private fun shouldRecommendObservation(error: BrowserError): Boolean = when (error) {
+        is BrowserError.StaleElementReference,
+        is BrowserError.ElementNotFound,
+        is BrowserError.ElementNotActionable,
+        is BrowserError.ElementOccluded,
+        is BrowserError.PageNotReady -> true
+        else -> false
+    }
+
+    private fun JsonObject.requiredElementRef(name: String): ElementRef {
+        val value = this[name] ?: throw InvalidToolArguments("Missing required argument: $name")
+        return json.decodeFromJsonElement(value)
+    }
+
+    private fun JsonObject.requiredString(name: String, allowEmpty: Boolean = false): String {
+        val value = optionalString(name)
+            ?: throw InvalidToolArguments("Missing or invalid string argument: $name")
+        if (!allowEmpty && value.isBlank()) throw InvalidToolArguments("Argument '$name' must not be blank")
+        return value
+    }
+
+    private fun JsonObject.optionalString(name: String): String? = this[name]?.jsonPrimitive?.contentOrNull
+
+    private fun JsonObject.optionalBoolean(name: String): Boolean? = this[name]?.jsonPrimitive?.booleanOrNull
+
+    private fun JsonObject.optionalInt(name: String): Int? = this[name]?.jsonPrimitive?.intOrNull
+
+    private fun JsonObject.optionalLong(name: String): Long? = this[name]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
+
+    private fun JsonObject.optionalDouble(name: String): Double? = this[name]?.jsonPrimitive?.doubleOrNull
+
+    private fun <T : Enum<T>> JsonObject.optionalEnum(name: String, values: List<T>): T? {
+        val raw = this[name]?.jsonPrimitive?.contentOrNull ?: return null
+        return values.firstOrNull { it.name.equals(raw, ignoreCase = true) }
+            ?: throw InvalidToolArguments("Unknown value for '$name': $raw")
+    }
+
+    private companion object {
+        const val OBSERVE = "browser_observe"
+        const val NAVIGATE = "browser_navigate"
+        const val CLICK = "browser_click"
+        const val TYPE_TEXT = "browser_type_text"
+        const val SELECT_OPTION = "browser_select_option"
+        const val SCROLL = "browser_scroll"
+        const val PRESS_KEYS = "browser_press_keys"
+        const val GO_BACK = "browser_go_back"
+        const val GO_FORWARD = "browser_go_forward"
+        const val RELOAD = "browser_reload"
+        const val LONG_PRESS = "browser_long_press"
+        const val SCROLL_INTO_VIEW = "browser_scroll_into_view"
+
+        val MINIMAL_TOOL_NAMES = setOf(OBSERVE, NAVIGATE, CLICK, TYPE_TEXT)
+        val STANDARD_TOOL_NAMES = MINIMAL_TOOL_NAMES + setOf(
+            SELECT_OPTION,
+            SCROLL,
+            PRESS_KEYS,
+            GO_BACK,
+            GO_FORWARD,
+            RELOAD,
+        )
+        val ADVANCED_TOOL_NAMES = STANDARD_TOOL_NAMES + setOf(LONG_PRESS, SCROLL_INTO_VIEW)
+
+        val ALL_DEFINITIONS = listOf(
+            tool(
+                OBSERVE,
+                "Observe the current webpage and return semantic content with stable element references.",
+                buildJsonObject {
+                    booleanProperty("include_screenshot")
+                    booleanProperty("include_compact_text")
+                    booleanProperty("include_offscreen_content")
+                },
+            ),
+            tool(
+                NAVIGATE,
+                "Navigate to an HTTP or HTTPS URL allowed by the host policy.",
+                buildJsonObject { stringProperty("url", minLength = 1) },
+                listOf("url"),
+            ),
+            tool(CLICK, "Click an actionable element from the latest observation.", targetProperties(), listOf("target")),
+            tool(
+                TYPE_TEXT,
+                "Enter text into an editable element from the latest observation.",
+                buildJsonObject {
+                    put("target", elementReferenceSchema())
+                    stringProperty("text")
+                    enumProperty("mode", TextInputMode.entries.map { it.name.lowercase() }, "replace_all")
+                },
+                listOf("target", "text"),
+            ),
+            tool(
+                SELECT_OPTION,
+                "Select exactly one option by value, visible label, or zero-based index.",
+                buildJsonObject {
+                    put("target", elementReferenceSchema())
+                    stringProperty("value")
+                    stringProperty("label")
+                    integerProperty("index", minimum = 0)
+                },
+                listOf("target"),
+                exactlyOneOf = listOf("value", "label", "index"),
+            ),
+            tool(
+                SCROLL,
+                "Scroll the page or a referenced scroll container by CSS pixels.",
+                buildJsonObject {
                     put("target", elementReferenceSchema())
                     numberProperty("delta_x_css_px")
                     numberProperty("delta_y_css_px")
