@@ -19,6 +19,7 @@ import kotlinx.serialization.json.put
  * Transport-neutral JSON-RPC 2.0 endpoint for browser tool discovery and invocation.
  * Hosts can place this behind HTTP, WebSocket, stdio, or an in-process message bus.
  */
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 class JsonRpcBrowserToolServer(
     private val dispatcher: AgentToolDispatcher,
     private val json: Json = Json {

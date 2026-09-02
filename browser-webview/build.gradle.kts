@@ -1,8 +1,8 @@
+import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     id("agentic.library-publish")
 }
@@ -11,7 +11,7 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
-android {
+extensions.configure<LibraryExtension> {
     namespace = "dev.shantoislam.agenticwebview.webview"
     compileSdk = 37
 
@@ -33,8 +33,8 @@ android {
     }
 
     sourceSets {
-        getByName("main").assets.srcDir("${rootProject.projectDir}/web-runtime/dist")
-        getByName("test").resources.srcDir("${rootProject.projectDir}/protocol-fixtures")
+        getByName("main").assets.directories.add(file("${rootProject.projectDir}/web-runtime/dist"))
+        getByName("test").resources.directories.add(file("${rootProject.projectDir}/protocol-fixtures"))
     }
 }
 

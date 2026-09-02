@@ -1,8 +1,8 @@
+import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("agentic.library-publish")
 }
@@ -11,7 +11,7 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
-android {
+extensions.configure<LibraryExtension> {
     namespace = "dev.shantoislam.agenticwebview.compose"
     compileSdk = 37
 

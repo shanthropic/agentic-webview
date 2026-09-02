@@ -25,7 +25,7 @@ internal data class RuntimeRequestEnvelope(
         require(method.matches(METHOD_PATTERN)) { "method has an invalid format" }
     }
 
-    private companion object {
+    companion object {
         val METHOD_PATTERN = Regex("^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9_]*)+$")
     }
 }
@@ -73,7 +73,7 @@ internal data class RuntimeProtocolError(
         require(message.isNotBlank()) { "Runtime error message must not be blank" }
     }
 
-    private companion object {
+    companion object {
         val CODE_PATTERN = Regex("^[A-Z][A-Z0-9_]*$")
     }
 }

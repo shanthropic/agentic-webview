@@ -12,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 class RuntimeProtocolGatewayTest {
     private val json = Json { explicitNulls = false; encodeDefaults = true }
 
