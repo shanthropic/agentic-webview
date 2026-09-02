@@ -23,5 +23,10 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "AgenticWebView"
-include(":app")
-include(":agentic-webview")
+include(":browser-api")
+include(":browser-webview")
+include(":browser-compose")
+include(":agent-tools")
+include(":integrations:koog")
+include(":integrations:jsonrpc")
+include(":samples:android")

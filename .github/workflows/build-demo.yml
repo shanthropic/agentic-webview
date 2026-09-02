@@ -26,21 +26,19 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: web-injector/package-lock.json
+          cache-dependency-path: web-runtime/package-lock.json
 
-      - name: Build web-injector
-        working-directory: web-injector
+      - name: Check web runtime
+        working-directory: web-runtime
         run: |
           npm ci
-          npm run build
-
-      - name: Copy web-injector bundle to assets
-        run: |
-          mkdir -p agentic-webview/src/main/assets
-          cp web-injector/dist/agentic_core.min.js agentic-webview/src/main/assets/
+          npm run check
 
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Validate architecture boundaries
+        run: node scripts/validate-architecture.mjs
+
       - name: Build demo app
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :samples:android:assembleDebug

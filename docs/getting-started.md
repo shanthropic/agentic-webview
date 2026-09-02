@@ -1,94 +1,66 @@
-# Integration Guide
+# Getting started
 
-This guide covers how to add the Agentic WebView SDK to your Android project and initialize it.
+Agentic WebView requires Android API 28+, Java 11 bytecode, and a host that can display an Android `WebView`.
 
-## 1. Add Dependency
+Navigation is HTTPS-only by default. Local fixtures or intentionally supported cleartext sites must opt in with `NavigationPolicy(allowedSchemes = setOf("https", "http"))`; the host application must also permit cleartext traffic where Android requires it.
 
-Add the following to your `build.gradle.kts` (or `build.gradle`):
+## Choose modules
 
 ```kotlin
 dependencies {
-    // Replace with the latest version
-    implementation("dev.shantoislam:agentic-webview:0.2.1")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-compose:VERSION") // Compose only
+    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION") // agent tools only
 }
 ```
 
-## 2. Basic Setup (Views)
+The Android library requires the application to declare Internet access:
 
-To use the SDK in a standard View-based layout:
-
-### Layout XML
 ```xml
-<dev.shantoislam.agenticwebview.AgenticWebView
-    android:id="@+id/agentic_webview"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+<uses-permission android:name="android.permission.INTERNET" />
 ```
 
-### Activity/Fragment
-```kotlin
-val webView = findViewById<AgenticWebView>(R.id.agentic_webview)
-val controller = AgenticWebController()
+## Create a session
 
-// Attach the controller to the WebView
-controller.attach(webView)
-
-// Load a URL
-webView.loadUrl("https://www.example.com")
-```
-
-## 3. Jetpack Compose Integration
-
-If you are using Jetpack Compose, use the provided `AgenticWebViewComposable`.
+For an SDK-owned view:
 
 ```kotlin
-val controller = remember { AgenticWebController() }
-
-AgenticWebViewComposable(
-    controller = controller,
-    modifier = Modifier.fillMaxSize(),
-    config = AgenticWebViewConfig.Builder()
-        .setEnableDebugLogging(true)
-        .build()
+val host = AgenticBrowserHost.create(
+    context = activity,
+    configuration = AgenticBrowserConfiguration(),
 )
+container.addView(host.view)
 ```
 
-## 4. Configuration Options
-
-You can customize the SDK's behavior using `AgenticWebViewConfig`.
-
-| Option | Default | Description |
-| :--- | :--- | :--- |
-| `screenshotEnabled` | `true` | Capture screenshots during state capture. |
-| `screenshotQuality` | `75` | JPEG compression quality (0-100). |
-| `screenshotMaxDimension` | `1920` | Max width/height of captured screenshots. |
-| `maxDomElements` | `500` | Limit the number of nodes in the accessibility tree. |
-| `enableAntiDetection` | `true` | Hide WebDriver flags to prevent bot detection. |
-| `viewportExpansion` | `0` | Px to capture outside the viewport (-1 for full page). |
-| `jsEvaluationTimeoutMs`| `5000`| Timeout for JavaScript execution. |
-| `pageSettleTimeoutMs` | `10000`| Max wait time for page to reach `COMPLETE` state. |
-| `pageSettleDebounceMs` | `500` | Debounce delay before declaring page settled. |
-| `elementStabilityTimeoutMs`| `1000`| Wait time for element positions to stabilize before input. |
-| `domMutationThrottleMs`| `300` | Throttle interval for DOM mutation callbacks. |
-| `actionRetryCount` | `2` | Number of retry attempts for failed actions. |
-| `enableDebugLogging` | `false`| Enable detailed SDK logs under `AgenticSDK:*` tags. |
-| `userAgent` | `null` | Custom User-Agent string (uses system default if null). |
-| `includeAttributes` | `null` | Specific HTML attributes to include in the tree serializer. |
-
-## 5. Security & Domain Control
-
-For production apps, you should restrict where the agent can navigate using domain allow-lists or deny-lists.
+For an existing WebView:
 
 ```kotlin
-val config = AgenticWebViewConfig.Builder()
-    .setAllowedHosts(setOf("google.com", "github.com"))
-    .setDeniedHosts(setOf("malicious-site.com"))
-    .setHomeUrl("https://my-safe-homepage.com")
-    .build()
+val host = AgenticBrowserHost.attach(existingWebView, configuration)
 ```
 
-- **allowedHosts**: If set, the WebView will block any navigation to hosts not in this set.
-- **deniedHosts**: If set, navigation to these hosts will be blocked.
-- **homeUrl**: If a navigation is blocked, the WebView can optionally redirect the user here.
+Creation and attachment happen on the main thread. Close the host when its UI owner is destroyed. The host owns a newly created WebView; it does not destroy an attached WebView.
 
-> **Note:** `AgenticWebViewConfig` is used in two places: the `AgenticWebController` constructor (for timeouts, retry counts, and screenshot settings) and the `AgenticWebViewComposable`/`AgenticWebView` (for WebView-level settings like anti-detection and domain control). For consistent behavior, pass the same config to both.
+## Navigate and observe
+
+```kotlin
+val navigation = host.session.navigate(NavigationRequest("https://example.com"))
+if (navigation is BrowserResult.Success) {
+    when (val observation = host.session.observe()) {
+        is BrowserResult.Success -> println(observation.value.compactText)
+        is BrowserResult.Failure -> println(observation.error)
+    }
+}
+```
+
+Do not cache element references across navigation. Use references returned by the latest observation and handle `StaleElementReference` by observing again.
+
+## Execute a typed command
+
+```kotlin
+val target = observation.nodes.firstNotNullOf { it.elementRef }
+val result = host.session.execute(BrowserCommand.Click(target))
+```
+
+All operations return `BrowserResult`; expected browser failures are values, not exceptions. Coroutine cancellation remains cancellation and aborts associated work.
+
+Continue with [Views](views.md), [Compose](compose.md), or [agent tools](agent-tools.md).
