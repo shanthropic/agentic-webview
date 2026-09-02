@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.maven.publish)
+    id("agentic.library-publish")
 }
 
 group = "dev.shantoislam.agenticwebview"
@@ -59,4 +59,3 @@ tasks.named("preBuild") {
 }
 
 extra["POM_ARTIFACT_ID"] = "browser-webview"
-apply(from = rootProject.file("gradle/publishing.gradle.kts"))

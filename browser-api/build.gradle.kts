@@ -4,7 +4,7 @@ plugins {
     `java-library`
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.maven.publish)
+    id("agentic.library-publish")
 }
 
 group = "dev.shantoislam.agenticwebview"
@@ -26,4 +26,3 @@ dependencies {
 }
 
 extra["POM_ARTIFACT_ID"] = "browser-api"
-apply(from = rootProject.file("gradle/publishing.gradle.kts"))

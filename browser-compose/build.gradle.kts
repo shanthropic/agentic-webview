@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.maven.publish)
+    id("agentic.library-publish")
 }
 
 group = "dev.shantoislam.agenticwebview"
@@ -46,4 +46,3 @@ dependencies {
 }
 
 extra["POM_ARTIFACT_ID"] = "browser-compose"
-apply(from = rootProject.file("gradle/publishing.gradle.kts"))

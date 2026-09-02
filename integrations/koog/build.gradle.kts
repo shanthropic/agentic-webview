@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     `java-library`
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.maven.publish)
+    id("agentic.library-publish")
 }
 
 group = "dev.shantoislam.agenticwebview"
@@ -24,4 +24,3 @@ dependencies {
 }
 
 extra["POM_ARTIFACT_ID"] = "integration-koog"
-apply(from = rootProject.file("gradle/publishing.gradle.kts"))
