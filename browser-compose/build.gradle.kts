@@ -7,9 +7,6 @@ plugins {
     id("agentic.library-publish")
 }
 
-group = "dev.shantoislam.agenticwebview"
-version = providers.gradleProperty("VERSION_NAME").get()
-
 kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
 }
@@ -44,5 +41,3 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 }
-
-extra["POM_ARTIFACT_ID"] = "browser-compose"

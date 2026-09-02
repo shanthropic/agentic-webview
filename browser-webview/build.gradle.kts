@@ -7,9 +7,6 @@ plugins {
     id("agentic.library-publish")
 }
 
-group = "dev.shantoislam.agenticwebview"
-version = providers.gradleProperty("VERSION_NAME").get()
-
 kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
 }
@@ -57,5 +54,3 @@ dependencies {
 tasks.named("preBuild") {
     dependsOn(rootProject.tasks.named("buildWebRuntime"))
 }
-
-extra["POM_ARTIFACT_ID"] = "browser-webview"

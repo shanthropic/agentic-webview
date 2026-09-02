@@ -8,7 +8,14 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.maven.publish) apply false
+}
+
+val libraryGroup = "dev.shantoislam.agenticwebview"
+val libraryVersion = providers.gradleProperty("VERSION_NAME").get()
+
+subprojects {
+    group = libraryGroup
+    version = libraryVersion
 }
 
 val buildWebRuntime by tasks.registering(Exec::class) {

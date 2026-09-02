@@ -11,7 +11,6 @@ kotlin = "2.3.21"
 composeBom = "2026.05.01"
 koog = "0.8.0"
 kotlinxSerialization = "1.6.3"
-mavenPublish = "0.30.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -38,4 +37,3 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
