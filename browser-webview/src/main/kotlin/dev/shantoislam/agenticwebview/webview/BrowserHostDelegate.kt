@@ -5,7 +5,7 @@ import android.net.Uri
 /** Synchronous decisions for requests that require host application authority. */
 interface BrowserHostDelegate {
     fun onDialog(request: BrowserDialogRequest): BrowserDialogDecision = BrowserDialogDecision.Cancel
-    fun onPopup(request: BrowserPopupRequest): BrowserPopupDecision = BrowserPopupDecision.Deny
+    fun onPopup(request: BrowserPopupRequest): BrowserPopupDecision = BrowserPopupDecision.DENY
     fun onPermission(request: BrowserPermissionRequest): Set<String> = emptySet()
     fun onDownload(request: BrowserDownloadRequest) = Unit
     fun onFileChooser(request: BrowserFileChooserRequest, respond: (Array<Uri>?) -> Unit): Boolean = false

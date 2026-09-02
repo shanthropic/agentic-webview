@@ -15,7 +15,7 @@ data class AgentToolDefinition(
         require(description.isNotBlank()) { "Tool description must not be blank" }
     }
 
-    private companion object {
+    companion object {
         val NAME_PATTERN = Regex("^[a-z][a-z0-9_]{0,63}$")
     }
 }
