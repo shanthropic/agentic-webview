@@ -92,6 +92,9 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       - name: Run deterministic WebView instrumentation
         uses: reactivecircus/android-emulator-runner@v2
         with:
