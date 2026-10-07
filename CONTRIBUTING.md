@@ -4,18 +4,13 @@ Agentic WebView is in breaking development. Changes should strengthen the typed 
 
 ## Local checks
 
-Use JDK 17, Android SDK 37, and Node 20.
+Use JDK 17, Android SDK 37, and the Node version in `.nvmrc`.
 
 ```bash
-cd web-runtime
-npm ci
-npm run check
-cd ..
-node scripts/validate-architecture.mjs
-node scripts/validate-doc-links.mjs
-./gradlew check :browser-api:jar :agent-tools:jar :integrations:jsonrpc:jar :integrations:koog:jar :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
-node scripts/check-artifact-sizes.mjs --require-built
+./gradlew deterministicCheck
 ```
+
+Gradle installs `web-runtime/` dependencies from `package-lock.json`, type-checks and tests the runtime, validates architecture and documentation links, runs module tests and lint, builds every artifact, and enforces artifact-size budgets. Individual steps are available as `checkWebRuntime`, `buildWebRuntime`, `validateArchitecture`, `validateDocLinks`, and `checkArtifactSizes`.
 
 Deterministic tests are required for pull requests. Emulator and live-agent tests must remain separate from deterministic SDK correctness checks.
 

@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to Maven Central
@@ -16,6 +20,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "ORG_GRADLE_PROJECT_VERSION_NAME=$VERSION" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -26,33 +37,24 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: 'npm'
           cache-dependency-path: web-runtime/package-lock.json
 
-      - name: Check and build web runtime
-        working-directory: web-runtime
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Same gate as CI. Builds every artifact, including the demo APK,
+      # before anything is published.
+      - name: Deterministic check
+        run: ./gradlew deterministicCheck
+
+      - name: Prepare demo APK and checksum
+        working-directory: samples/android/build/outputs/apk/debug
         run: |
-          npm ci
-          npm run check
-
-      - name: Validate architecture boundaries
-        run: node scripts/validate-architecture.mjs
-
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      - name: Validate release artifacts
-        run: ./gradlew :browser-api:test :browser-api:jar :agent-tools:test :agent-tools:jar :integrations:jsonrpc:test :integrations:jsonrpc:jar :integrations:koog:check :integrations:koog:jar :browser-webview:testDebugUnitTest :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
-        env:
-          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
-
-      - name: Enforce artifact-size budgets
-        run: node scripts/check-artifact-sizes.mjs --require-built
+          APK="agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk"
+          mv android-debug.apk "$APK"
+          sha256sum "$APK" > "$APK.sha256"
 
       - name: Publish all SDK modules to Maven Central
         run: >-
@@ -69,18 +71,6 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
-          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
-
-      - name: Build demo app APK (debug signed)
-        run: ./gradlew :samples:android:assembleDebug
-        env:
-          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
-
-      - name: Rename APK with version
-        run: mv samples/android/build/outputs/apk/debug/android-debug.apk samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk
-
-      - name: Create demo checksum
-        run: sha256sum samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk > samples/android/build/outputs/apk/debug/agentic-webview-demo-${{ steps.version.outputs.VERSION }}.apk.sha256
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

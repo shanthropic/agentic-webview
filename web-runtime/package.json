@@ -8,7 +8,8 @@
     "build": "esbuild src/index.ts --bundle --minify --outfile=dist/agentic_runtime.min.js --format=iife --global-name=AgenticWebRuntimeBundle --target=es2019",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "check": "npm run typecheck && npm test -- --runInBand && npm run build"
+    "verify": "npm run typecheck && npm test -- --runInBand",
+    "check": "npm run verify && npm run build"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

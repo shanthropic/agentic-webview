@@ -5,10 +5,18 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-    name: Build & Lint
+  verify:
+    name: Deterministic checks
     runs-on: ubuntu-latest
 
     steps:
@@ -24,48 +32,59 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: 'npm'
           cache-dependency-path: web-runtime/package-lock.json
 
-      - name: Check and build web runtime
-        working-directory: web-runtime
-        run: |
-          npm ci
-          npm run check
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Build documentation website
+      # Installs web-runtime dependencies, runs runtime/architecture/doc checks,
+      # module tests and lint, builds every artifact, and enforces size budgets.
+      - name: Deterministic check
+        run: ./gradlew deterministicCheck
+
+      - name: Upload demo APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-apk
+          path: samples/android/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: '**/build/reports/**'
+          if-no-files-found: ignore
+
+  website:
+    name: Documentation website
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: website
-        run: |
-          npm ci
-          npm run lint
-          npm run build
 
-      - name: Validate canonical documentation links
-        run: node scripts/validate-doc-links.mjs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Validate architecture boundaries
-        run: node scripts/validate-architecture.mjs
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+          cache-dependency-path: website/package-lock.json
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      - name: Build library
-        run: ./gradlew :browser-api:test :browser-api:jar :agent-tools:test :agent-tools:jar :integrations:jsonrpc:test :integrations:jsonrpc:jar :integrations:koog:check :integrations:koog:jar :browser-webview:testDebugUnitTest :browser-webview:assembleRelease :browser-compose:testDebugUnitTest :browser-compose:assembleRelease :samples:android:assembleDebug
-
-      - name: Enforce artifact-size budgets
-        run: node scripts/check-artifact-sizes.mjs --require-built
-
-      - name: Lint
-        run: ./gradlew :browser-webview:lint :browser-compose:lint :samples:android:lint
-
-      - name: Validate publication metadata and consumer rules
-        run: ./gradlew generatePomFileForMavenPublication :browser-webview:assembleRelease
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
 
   instrumented:
     name: Android instrumentation
     runs-on: ubuntu-latest
-    needs: build
+    needs: verify
 
     steps:
       - name: Checkout
@@ -80,20 +99,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
+          cache: 'npm'
+          cache-dependency-path: web-runtime/package-lock.json
 
-      - name: Install runtime dependencies
-        working-directory: web-runtime
-        run: npm ci
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
 
       - name: Run deterministic WebView instrumentation
         uses: reactivecircus/android-emulator-runner@v2

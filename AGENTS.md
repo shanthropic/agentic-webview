@@ -2,13 +2,14 @@
 
 ## Tooling
 
-- Android/Kotlin: `./gradlew`
+- Android/Kotlin: `./gradlew` (installs `web-runtime/` npm dependencies automatically)
+- Node version: `.nvmrc`
 - Page runtime: `npm` in `web-runtime/`
-- Runtime check: `npm run check`
-- Architecture check: `node scripts/validate-architecture.mjs`
-- Documentation check: `node scripts/validate-doc-links.mjs`
-- Full deterministic check: `./gradlew check :browser-api:jar :agent-tools:jar :integrations:jsonrpc:jar :integrations:koog:jar :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug`
-- Built artifact budgets: `node scripts/check-artifact-sizes.mjs --require-built`
+- Runtime check: `npm run check` (or `./gradlew checkWebRuntime buildWebRuntime`)
+- Architecture check: `./gradlew validateArchitecture`
+- Documentation check: `./gradlew validateDocLinks`
+- Full deterministic check (includes artifact budgets): `./gradlew deterministicCheck`
+- Built artifact budgets only: `./gradlew checkArtifactSizes`
 
 ## Architecture boundaries
 

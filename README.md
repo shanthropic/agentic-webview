@@ -69,17 +69,10 @@ For an agent framework, construct `StandardBrowserTools(host.session)`. Its stan
 ## Development checks
 
 ```bash
-cd web-runtime
-npm ci
-npm run check
-cd ..
-node scripts/validate-architecture.mjs
-node scripts/validate-doc-links.mjs
-./gradlew check :browser-api:jar :agent-tools:jar :integrations:jsonrpc:jar :integrations:koog:jar :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
-node scripts/check-artifact-sizes.mjs --require-built
+./gradlew deterministicCheck
 ```
 
-The Gradle build always rebuilds `web-runtime/dist/agentic_runtime.min.js`; never edit the bundle directly.
+Gradle installs `web-runtime/` npm dependencies from the lockfile and always rebuilds `web-runtime/dist/agentic_runtime.min.js`; never edit the bundle directly. Use the Node version in `.nvmrc`.
 
 See [Getting started](docs/getting-started.md), [Architecture](docs/architecture.md), [Security](docs/security.md), and the [full refactoring blueprint](docs/architecture-refactoring-plan.md).
 

@@ -3,13 +3,10 @@
 Run deterministic checks:
 
 ```bash
-cd web-runtime && npm ci && npm run check
-cd ..
-node scripts/validate-architecture.mjs
-node scripts/validate-doc-links.mjs
-./gradlew check :browser-api:jar :agent-tools:jar :integrations:jsonrpc:jar :integrations:koog:jar :browser-webview:assembleRelease :browser-compose:assembleRelease :samples:android:assembleDebug
-node scripts/check-artifact-sizes.mjs --require-built
+./gradlew deterministicCheck
 ```
+
+This single task installs `web-runtime/` dependencies (`npm ci`), runs `checkWebRuntime` (type-check and Jest), `buildWebRuntime`, `validateArchitecture`, `validateDocLinks`, every module's `check` (unit tests and lint), builds all publishable artifacts and the sample APK, and finishes with `checkArtifactSizes`. CI and the release workflow run the same task.
 
 TypeScript tests cover protocol validation, semantic extraction, identity stability, frames, Shadow DOM, redaction, input strategies, and action outcomes. Kotlin tests cover configuration, lifecycle reduction, policy matching, request correlation/cancellation, and tool adapters. Both sides consume `protocol-fixtures/v1`.
 
