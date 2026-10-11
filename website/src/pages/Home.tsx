@@ -19,7 +19,7 @@ fun AgenticBrowserApp() {
 
     LaunchedEffect(host) {
         when (val result = host.session.navigate(NavigationRequest("https://example.com"))) {
-            is BrowserResult.Success -> println("Navigated: \${result.value.finalUrl}")
+            is BrowserResult.Success -> println("Navigated to: \${result.value.finalUrl}")
             is BrowserResult.Failure -> println("Navigation error: \${result.error.message}")
         }
     }
@@ -50,7 +50,7 @@ const viewsQuickStart = `class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             when (val result = host.session.navigate(NavigationRequest("https://example.com"))) {
-                is BrowserResult.Success -> println("Navigated: \${result.value.finalUrl}")
+                is BrowserResult.Success -> println("Navigated to: \${result.value.finalUrl}")
                 is BrowserResult.Failure -> println("Navigation error: \${result.error.message}")
             }
         }
@@ -62,45 +62,46 @@ const viewsQuickStart = `class MainActivity : ComponentActivity() {
     }
 }`;
 
-const agentToolsQuickStart = `// Bind framework-neutral tools (MINIMAL, STANDARD, or ADVANCED profile)
+const agentToolsQuickStart = `// Bind framework-neutral browser tools (MINIMAL, STANDARD, or ADVANCED profile)
 val browserTools = StandardBrowserTools(
     session = host.session,
     profile = BrowserToolProfile.STANDARD,
 )
 
-// Export JSON Schema definitions to any LLM runtime
+// Export standard JSON Schema definitions to any LLM runtime
 val definitions = browserTools.definitions
 
-// Suspend invocation of tool from LLM function call arguments
-suspend fun executeLlmTool(name: String, arguments: JsonObject) {
+// Suspend invocation of tool from model function call arguments
+suspend fun handleToolCall(name: String, arguments: JsonObject) {
     val result = browserTools.invoke(name, arguments)
     if (result.success) {
         println("Tool output: \${result.output}")
     } else {
         val code = result.output["code"]?.jsonPrimitive?.content
-        println("Tool error: \$code (recommendObservation=\${result.output["recommendObservation"]})")
+        val retryHint = result.output["recommendObservation"]
+        println("Tool error: \$code (recommendObservation=\$retryHint)")
     }
 }`;
 
 const installationCode = `// build.gradle.kts
 dependencies {
     // Current release line: 0.3.0-SNAPSHOT
-    // Core contracts & data models (Pure Kotlin / JVM)
+    // 1. Core contracts and data models (Pure Kotlin / JVM)
     implementation("dev.shantoislam.agenticwebview:browser-api:0.3.0-SNAPSHOT")
 
-    // Android WebView host implementation & runtime bridge (Android AAR)
+    // 2. Android Views WebView host (Android AAR)
     implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0-SNAPSHOT")
 
-    // Jetpack Compose UI integration (Android AAR, optional)
+    // 3. Jetpack Compose UI integration (Android AAR, optional)
     implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.0-SNAPSHOT")
 
-    // Framework-neutral agent tool definitions & dispatcher (JVM, optional)
+    // 4. Framework-neutral agent tool definitions & dispatcher (JVM, optional)
     implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0-SNAPSHOT")
 
-    // JetBrains Koog agent framework binding (JVM, optional)
+    // 5. JetBrains Koog agent framework binding (JVM, optional)
     implementation("dev.shantoislam.agenticwebview:integration-koog:0.3.0-SNAPSHOT")
 
-    // Transport-neutral JSON-RPC 2.0 tool server (JVM, optional)
+    // 6. Transport-neutral JSON-RPC 2.0 tool server (JVM, optional)
     implementation("dev.shantoislam.agenticwebview:integration-jsonrpc:0.3.0-SNAPSHOT")
 }`;
 
@@ -157,12 +158,12 @@ const artifacts = [
   {
     name: 'agent-tools',
     format: 'JAR',
-    description: 'Framework-neutral JSON Schema tool definitions (Minimal, Standard, Advanced profiles) and dispatcher.',
+    description: 'Framework-neutral JSON Schema tool definitions, dispatcher, and envelope serializer.',
   },
   {
     name: 'integration-koog',
     format: 'JAR',
-    description: 'Reflective ToolSet adapter for autonomous browser agents built on JetBrains Koog.',
+    description: 'Reflective ToolSet adapter for the JetBrains Koog Agents library.',
   },
   {
     name: 'integration-jsonrpc',
@@ -171,12 +172,27 @@ const artifacts = [
   },
 ];
 
+const docLinks = [
+  { title: 'Getting started', path: '/documentation#getting-started-md', desc: 'Setup requirements, installation, and end-to-end navigate/observe/click recipe' },
+  { title: 'Android Views integration', path: '/documentation#views-md', desc: 'AgenticBrowserHost, custom BrowserHostDelegate, Activity lifecycle, and events' },
+  { title: 'Jetpack Compose integration', path: '/documentation#compose-md', desc: 'rememberAgenticBrowserHost, AgenticBrowserView, reactive StateFlow collection' },
+  { title: 'Command reference', path: '/documentation#commands-md', desc: 'Recipes for all 7 commands, native touch simulation, await, and navigateHistory' },
+  { title: 'Configuration cookbook', path: '/documentation#configuration-md', desc: 'Comprehensive reference for all 7 sub-configurations with real-world recipes' },
+  { title: 'Observation model', path: '/documentation#observations-md', desc: 'Semantic DOM extraction, ElementRef identity, redaction, and metrics' },
+  { title: 'Diagnostics & error catalog', path: '/documentation#diagnostics-md', desc: 'Catalog of all 23 BrowserError types and recovery recipes; Kotlin vs JSON codes' },
+  { title: 'Lifecycle & event streams', path: '/documentation#lifecycle-md', desc: 'Detailed reference for the 11 session phases and 11 browser event types' },
+  { title: 'Framework-neutral agent tools', path: '/documentation#agent-tools-md', desc: 'Schemas for all 12 tools, profiles (Minimal, Standard, Advanced), and JSON output' },
+  { title: 'Koog agent integration', path: '/documentation#koog-md', desc: 'Step-by-step recipe for building autonomous agents using JetBrains Koog' },
+  { title: 'JSON-RPC tool endpoint', path: '/documentation#jsonrpc-md', desc: 'Transport-neutral JSON-RPC 2.0 tool discovery and invocation over WebSocket/HTTP' },
+  { title: 'Sample application guide', path: '/documentation#samples-md', desc: 'Architecture and runner guide for samples/android (Simulation & Autonomous Agent)' },
+];
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-vp-bg text-vp-fg font-sans antialiased flex flex-col items-center">
       <SEO
-        title="Agentic WebView SDK"
-        description="A typed, framework-neutral agentic browser SDK for Android WebView with semantic DOM observations, verified action execution, and deterministic lifecycle control."
+        title="Agentic WebView"
+        description="A typed, framework-neutral browser SDK for Android. Transforms an Android WebView into an autonomous agent-governed browsing environment with semantic page observations, document-scoped element references, verified action execution, navigation security policies, and structured error diagnostics."
         path="/"
       />
 
@@ -189,7 +205,7 @@ export default function Home() {
                 <h1 className="text-xl sm:text-2xl font-medium tracking-tight text-vp-fg">Agentic WebView</h1>
               </div>
               <p className="text-vp-text text-[15px] sm:text-base leading-relaxed">
-                Platform-grade Android WebView orchestration for AI agents with semantic DOM observations, verified action execution, and deterministic lifecycle control.
+                A typed, framework-neutral browser SDK for Android. Transforms an Android <code>WebView</code> into an autonomous agent-governed browsing environment with semantic page observations, document-scoped element references, verified action execution, navigation security policies, and structured error diagnostics.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center justify-between text-sm gap-4">
@@ -217,7 +233,7 @@ export default function Home() {
             <div className="home-prose prose-vp max-w-none font-sans text-[15px] leading-[1.65] text-vp-fg antialiased">
               <section>
                 <p>
-                  <code>Agentic WebView</code> provides a typed, deterministic bridge between Android applications and web pages for autonomous agents. Standard Android <code>WebView</code> exposes only untyped JavaScript string evaluation and uncoordinated callbacks, leaving agent automation fragile, prone to DOM mutation race conditions, and vulnerable to prompt injection. Agentic WebView replaces this with single-owner session lifecycles, structured semantic accessibility tree observations, verified action dispatch with non-occlusion checks, synthetic native hardware touch gestures, and hardened hostile page isolation.
+                  One <code>AgenticBrowserSession</code> owns one <code>WebView</code>, one configuration, and one deterministic lifecycle. Instead of brittle JavaScript string evaluation or heavy raw HTML dumps, Agentic WebView gives agents structured semantic accessibility observations, mutation-safe element references, and verified actions with optional hardware-level touch simulation.
                 </p>
                 <CodeSnippet
                   tabs={[
@@ -230,34 +246,21 @@ export default function Home() {
               </section>
 
               <section>
-                <h2>Architecture & Security</h2>
+                <h2>Core Guarantees</h2>
                 <ul>
-                  <li><strong>Single session ownership</strong> — One <code>AgenticBrowserSession</code> owns one WebView, one immutable configuration, and one deterministic lifecycle. No split-brain state or ambiguous ownership.</li>
-                  <li><strong>Correlated protocol bridge</strong> — Typed, versioned JavaScript dispatch envelopes enforce strict timeout bounds, bounded payload sizes, and in-flight request limits before any script executes.</li>
-                  <li><strong>Hostile page isolation</strong> — Page content is treated as untrusted; sensitive fields (such as <code>password</code> and <code>data-agentic-sensitive</code>) are automatically redacted before reaching models, and cross-origin frames report explicit security limitations.</li>
-                  <li><strong>Navigation policy enforcement</strong> — Enforces strict host allowlisting/denylisting, HTTPS requirements, and privileged navigation delegation.</li>
-                </ul>
-
-                <h2>Observation & Verified Actions</h2>
-                <ul>
-                  <li><strong>Semantic DOM extraction</strong> — Extracts a compact accessibility tree with semantic roles, accessible names, and viewport bounding boxes optimized for LLM context windows and token budgets.</li>
-                  <li><strong>Stable element references</strong> — Every <code>ElementRef</code> binds document ID, frame ID, node ID, and observed revision to eliminate stale-reference mutation races.</li>
-                  <li><strong>Postcondition verification</strong> — Touch, click, and input commands verify visibility, pointer occlusion, and resulting page changes before returning a receipt.</li>
-                  <li><strong>Hardware-level touch simulation</strong> — Supports both fast DOM pointer dispatch and synthetic Android <code>MotionEvent</code> touch gestures (<code>event.isTrusted === true</code>) for gesture-sensitive webapps and canvas interactions.</li>
-                </ul>
-
-                <h2>Framework Neutrality & Tooling</h2>
-                <ul>
-                  <li><strong>Zero LLM lock-in</strong> — Core contracts in <code>browser-api</code> have zero direct LLM dependencies and run cleanly on desktop JVM for fast, deterministic unit and regression testing.</li>
-                  <li><strong>Typed errors vs tool codes</strong> — Idiomatic Kotlin pattern-matching on 23 <code>BrowserError</code> sealed subclasses, paired with serialized uppercase error codes and recovery hints for tool callers.</li>
-                  <li><strong>Pluggable agent adapters</strong> — First-class integration modules for JetBrains Koog autonomous browser agents and transport-neutral JSON-RPC 2.0 servers over HTTP, WebSocket, or stdio.</li>
+                  <li><strong>Single Owner</strong> — One <code>AgenticBrowserSession</code> owns one WebView, one immutable configuration, and one deterministic lifecycle. No split-brain state or ambiguous ownership.</li>
+                  <li><strong>Correlated Envelopes</strong> — All JavaScript communication uses correlated, versioned protocol envelopes with timeout, payload size, and pending-request limits before any script executes.</li>
+                  <li><strong>Scrolled &amp; Verified Actions</strong> — Actions validate document identity, enabled state, visibility, and occlusion; commands verify postconditions before returning success.</li>
+                  <li><strong>Native Touch Simulation</strong> — Optional Android hardware-like pointer synthesis (<code>ANDROID_NATIVE_POINTER</code>) creates trusted touch events for complex gesture-sensitive webapps and canvas interactions.</li>
+                  <li><strong>Untrusted Page Content</strong> — Page content is marked untrusted; sensitive fields (such as <code>password</code> and <code>data-agentic-sensitive</code>) are automatically redacted before reaching models.</li>
+                  <li><strong>No Direct LLM Dependency in Core</strong> — The browser core is framework-neutral. Agent tool adapters sit above the pure browser session.</li>
                 </ul>
               </section>
 
               <section>
                 <h2>Published Modules</h2>
                 <p>
-                  Modularized into six focused artifacts under Maven Central group <code>dev.shantoislam.agenticwebview</code>:
+                  Add only the modules required by your Android app or agent service under Maven Central group <code>dev.shantoislam.agenticwebview</code>:
                 </p>
                 <table className="w-full text-left text-[13px] border-collapse m-0">
                   <thead>
@@ -292,13 +295,38 @@ export default function Home() {
               <section>
                 <h2>End-to-End Workflow</h2>
                 <p>
-                  Navigate, observe semantic page nodes, and execute verified actions with typed error recovery:
+                  Navigate, observe semantic page nodes, locate target elements, and execute verified actions with typed error recovery:
                 </p>
                 <CodeSnippet
                   code={workflowCode}
                   label="BrowserWorkflow.kt"
                   className="mt-4 mb-6"
                 />
+              </section>
+
+              <section>
+                <h2>Documentation Index</h2>
+                <p>Explore the dedicated API usage and architecture guides:</p>
+                <table className="w-full text-left text-[13px] border-collapse m-0">
+                  <thead>
+                    <tr className="bg-vp-input/40 border-b border-vp-border">
+                      <th className="py-2.5 px-3.5 font-medium text-vp-fg whitespace-nowrap">Guide</th>
+                      <th className="py-2.5 px-3.5 font-medium text-vp-fg">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-vp-border">
+                    {docLinks.map((item) => (
+                      <tr key={item.title} className="text-vp-text">
+                        <td className="py-2.5 px-3.5 whitespace-nowrap">
+                          <Link to={item.path} className="text-vp-fg hover:text-vp-highlight font-medium">
+                            {item.title}
+                          </Link>
+                        </td>
+                        <td className="py-2.5 px-3.5 text-vp-text">{item.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </section>
 
               <section className="pt-8 mb-16 border-t border-vp-border">

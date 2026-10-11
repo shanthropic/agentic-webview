@@ -9,7 +9,7 @@ interface SEOProps {
 export function SEO({ title, description, path }: SEOProps) {
   useEffect(() => {
     // 1. Update title
-    const fullTitle = title === 'Agentic WebView SDK' ? title : `${title} | Agentic WebView SDK`;
+    const fullTitle = title === 'Agentic WebView' ? title : `${title} | Agentic WebView`;
     document.title = fullTitle;
 
     // Helper to set/update meta tag
