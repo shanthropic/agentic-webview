@@ -48,24 +48,22 @@ const viewsQuickStart = `class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        host.close()
-        super.onDestroy()
-    }
+    override fun onResume() { super.onResume(); host.onResume() }
+    override fun onPause() { host.onPause(); super.onPause() }
+    override fun onDestroy() { host.close(); super.onDestroy() }
 }`;
 
-const inputCode = `[15]<button name="Submit" />
-[16]<input type="text" placeholder="Search..." />
-[22]<select aria-label="Country">
-  [23]<option>USA</option>
-  [24]<option>Canada</option>
-</select>`;
+const inputCode = `[main/15]<button role="button" name="Submit">
+[main/16]<input role="textbox" name="Search...">
+[main/22]<select role="combobox" name="Country">
+  [main/23]<option role="option" name="USA"> USA
+  [main/24]<option role="option" name="Canada"> Canada`;
 
 const outputCode = `val result = host.session.execute(
     BrowserCommand.TypeText(
         target = elementRef,
         text = "Machine Learning",
-        mode = TextUpdateMode.REPLACE_ALL,
+        mode = TextInputMode.REPLACE_ALL,
     )
 )`;
 
