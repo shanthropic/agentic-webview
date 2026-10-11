@@ -1,6 +1,6 @@
 {
   "name": "agentic-webview-runtime",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "Apache-2.0",
   "description": "Versioned page-side runtime for Agentic WebView",
   "main": "dist/agentic_runtime.min.js",

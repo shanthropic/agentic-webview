@@ -9,8 +9,8 @@ The `browser-compose` artifact provides declarative Jetpack Compose bindings for
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0")
-    implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.0")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.1")
+    implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.1")
 }
 ```
 

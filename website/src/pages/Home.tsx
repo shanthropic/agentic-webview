@@ -69,9 +69,9 @@ const outputCode = `val result = host.session.execute(
 
 const gettingStartedCode = `// build.gradle.kts
 dependencies {
-    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0")
-    implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.0") // optional
-    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0") // optional
+    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.1")
+    implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.1") // optional
+    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.1") // optional
 }`;
 
 export default function Home() {
@@ -112,7 +112,7 @@ export default function Home() {
             >
               Documentation
             </Link>
-            <span className="text-vp-subtle cursor-default">v0.3.0</span>
+            <span className="text-vp-subtle cursor-default">v0.3.1</span>
           </div>
         </header>
 

@@ -1,7 +1,6 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
     id("com.vanniktech.maven.publish")
+    id("org.jetbrains.dokka")
 }
 
 val artifactId = when (project.path) {
@@ -15,7 +14,7 @@ val artifactId = when (project.path) {
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
     coordinates(
         groupId = project.group.toString(),
@@ -25,7 +24,7 @@ mavenPublishing {
     pom {
         name.set("Agentic WebView: $artifactId")
         description.set("A typed, framework-neutral agentic browser SDK for Android WebView")
-        url.set("https://github.com/shantoislamdev/agentic-webview")
+        url.set("https://github.com/shanthropic/agentic-webview")
         licenses {
             license {
                 name.set("Apache License 2.0")
@@ -35,15 +34,15 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("shantoislamdev")
+                id.set("shanthropic")
                 name.set("Shanto Islam")
-                url.set("https://github.com/shantoislamdev")
+                url.set("https://github.com/shanthropic")
             }
         }
         scm {
-            url.set("https://github.com/shantoislamdev/agentic-webview")
-            connection.set("scm:git:https://github.com/shantoislamdev/agentic-webview.git")
-            developerConnection.set("scm:git:ssh://git@github.com/shantoislamdev/agentic-webview.git")
+            url.set("https://github.com/shanthropic/agentic-webview")
+            connection.set("scm:git:https://github.com/shanthropic/agentic-webview.git")
+            developerConnection.set("scm:git:ssh://git@github.com/shanthropic/agentic-webview.git")
         }
     }
 }
