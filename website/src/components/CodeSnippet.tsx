@@ -10,13 +10,13 @@ const escapeHtml = (unsafe: string) => {
 
 const highlightCode = (code: string) => {
   const tokenRegex = new RegExp([
-    '(?<comment>//.*|#.*)',
+    '(?<comment>//.*|#.*|/\\*[\\s\\S]*?\\*/)',
     '(?<multilineString>"""[\\s\\S]*?""")',
-    '(?<string>"(?:[^"\\\\]|\\\\.)*")',
+    '(?<string>"(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')',
     '(?<bracketNum>\\[\\d+\\])',
     '(?<annotation>@[a-zA-Z0-9_]+)',
     '(?<number>\\b\\d+(?:\\.\\d+)?f?\\b)',
-    '(?<keyword>\\b(?:val|var|fun|class|interface|sealed|data|object|package|import|override|suspend|if|else|when|in|is|return|true|false|null|remember|implementation|dependencies|setOf|emptySet)\\b)',
+    '(?<keyword>\\b(?:val|var|fun|class|interface|sealed|data|object|package|import|override|suspend|if|else|when|in|is|return|true|false|null|remember|implementation|dependencies|setOf|emptySet|private|lateinit|super|by|as|for|while|try|catch|finally|throw|open|public|protected|internal|const)\\b)',
     '(?<type>\\b[A-Z][a-zA-Z0-9_]*\\b)',
     '(?<function>\\b[a-z][a-zA-Z0-9_]*(?=\\s*\\())',
     '(?<namedArg>\\b[a-zA-Z0-9_-]+(?=\\s*=(?!=)))',
@@ -62,14 +62,52 @@ const highlightCode = (code: string) => {
   return result;
 };
 
-export function CodeSnippet({ code, label, className }: { code: string, label?: string, className?: string }) {
-  const highlighted = highlightCode(code);
+export interface CodeTab {
+  label: string;
+  code: string;
+}
+
+export interface CodeSnippetProps {
+  code?: string;
+  label?: string;
+  tabs?: CodeTab[];
+  className?: string;
+}
+
+export function CodeSnippet({ code = '', label, tabs, className }: CodeSnippetProps) {
+  const [activeTabIdx, setActiveTabIdx] = React.useState(0);
+
+  const activeCode = tabs && tabs.length > 0 ? tabs[activeTabIdx]?.code ?? '' : code;
+  const activeLabel = tabs && tabs.length > 0 ? undefined : label;
+  const highlighted = highlightCode(activeCode);
 
   return (
     <div className={`relative group bg-vp-bg border border-vp-border rounded-sm flex flex-col ${className || 'mb-6 mt-4'}`}>
-      <CopyButton text={code} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10" />
+      {tabs && tabs.length > 0 ? (
+        <div className="flex items-center justify-between border-b border-vp-border px-3 py-1.5 bg-vp-input/40">
+          <div className="flex items-center gap-1.5">
+            {tabs.map((tab, idx) => (
+              <button
+                key={tab.label}
+                type="button"
+                onClick={() => setActiveTabIdx(idx)}
+                className={`px-2.5 py-1 text-[12px] font-mono rounded-sm transition-colors cursor-pointer border ${
+                  activeTabIdx === idx
+                    ? 'text-vp-fg bg-vp-bg border-vp-border font-medium'
+                    : 'text-vp-subtle hover:text-vp-fg border-transparent'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <CopyButton text={activeCode} className="text-vp-subtle hover:text-vp-fg" />
+        </div>
+      ) : (
+        <CopyButton text={activeCode} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10" />
+      )}
       <div className="p-4 sm:p-5 overflow-x-auto code-scroll">
-        {label && <span className="text-[11px] font-medium uppercase tracking-wider text-vp-subtle mb-3 block">{label}</span>}
+        {activeLabel && <span className="text-[11px] font-medium uppercase tracking-wider text-vp-subtle mb-3 block">{activeLabel}</span>}
         <pre 
           className="text-[12px] sm:text-[13px] font-mono text-vp-text flex-1 leading-[1.7]"
           dangerouslySetInnerHTML={{ __html: highlighted }}

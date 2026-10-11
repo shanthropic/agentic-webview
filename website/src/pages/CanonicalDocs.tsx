@@ -6,7 +6,7 @@ import { Logo } from '../components/Logo';
 import { SEO } from '../components/SEO';
 import { ThemeToggle } from '../components/ThemeToggle';
 
-const repository = 'https://github.com/shantoislamdev/agentic-webview/blob/main/docs';
+const repository = 'https://github.com/shanthropic/agentic-webview/blob/main/docs';
 
 interface DocItem {
   title: string;
