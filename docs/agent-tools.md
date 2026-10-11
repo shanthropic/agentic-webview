@@ -7,8 +7,8 @@ The `agent-tools` module provides typed, framework-neutral tools formatted as JS
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("dev.shantoislam.agenticwebview:browser-api:VERSION")
-    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-api:0.3.0")
+    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0")
 }
 ```
 

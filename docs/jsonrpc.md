@@ -9,9 +9,9 @@ This enables exposing Agentic WebView tools to external processes, remote agent 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("dev.shantoislam.agenticwebview:browser-webview:VERSION")
-    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION")
-    implementation("dev.shantoislam.agenticwebview:integration-jsonrpc:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0")
+    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0")
+    implementation("dev.shantoislam.agenticwebview:integration-jsonrpc:0.3.0")
 }
 ```
 

@@ -10,8 +10,8 @@ Add the integration module alongside the Koog framework dependencies in your `bu
 // build.gradle.kts
 dependencies {
     // Agentic WebView Koog adapter & core tools
-    implementation("dev.shantoislam.agenticwebview:integration-koog:VERSION")
-    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION")
+    implementation("dev.shantoislam.agenticwebview:integration-koog:0.3.0")
+    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0")
 
     // Koog Agents framework
     implementation("ai.koog:koog-agents:1.2.0")

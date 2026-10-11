@@ -7,7 +7,7 @@ The `browser-webview` artifact provides `AgenticBrowserHost`, which hosts an And
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("dev.shantoislam.agenticwebview:browser-webview:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0")
 }
 ```
 

@@ -17,22 +17,22 @@ Agentic WebView is modularized into six published artifacts on Maven Central und
 // build.gradle.kts
 dependencies {
     // Core contracts and data models (Pure Kotlin / JVM)
-    implementation("dev.shantoislam.agenticwebview:browser-api:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-api:0.3.0")
 
     // Android WebView host implementation, lifecycle & runtime bridge (Android AAR)
-    implementation("dev.shantoislam.agenticwebview:browser-webview:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-webview:0.3.0")
 
     // Optional: Jetpack Compose integration (Android AAR)
-    implementation("dev.shantoislam.agenticwebview:browser-compose:VERSION")
+    implementation("dev.shantoislam.agenticwebview:browser-compose:0.3.0")
 
     // Optional: Framework-neutral LLM agent tool definitions & dispatcher (JVM)
-    implementation("dev.shantoislam.agenticwebview:agent-tools:VERSION")
+    implementation("dev.shantoislam.agenticwebview:agent-tools:0.3.0")
 
     // Optional: Official Koog agent framework binding (JVM)
-    implementation("dev.shantoislam.agenticwebview:integration-koog:VERSION")
+    implementation("dev.shantoislam.agenticwebview:integration-koog:0.3.0")
 
     // Optional: Transport-neutral JSON-RPC 2.0 tool server (JVM)
-    implementation("dev.shantoislam.agenticwebview:integration-jsonrpc:VERSION")
+    implementation("dev.shantoislam.agenticwebview:integration-jsonrpc:0.3.0")
 }
 ```
 
